@@ -3,50 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Кондитерская Бот</title>
+    <title>Витрина | Нежные десерты</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <link href="https://fonts.fontsource.org/font-files/inter/400.css" rel="stylesheet">
-    <link href="https://fonts.fontsource.org/font-files/inter/500.css" rel="stylesheet">
-    <link href="https://fonts.fontsource.org/font-files/inter/600.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
         .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
         .fade-enter-from, .fade-leave-to { opacity: 0; }
-        .slide-up-enter-active, .slide-up-leave-active { transition: all 0.3s ease; }
-        .slide-up-enter-from, .slide-up-leave-to { transform: translateY(20px); opacity: 0; }
-        
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        .btn-primary { @apply w-full py-3 px-4 bg-pink-500 hover:bg-pink-600 text-white font-semibold rounded-xl shadow-md transition-all active:scale-95 flex items-center justify-center gap-2; }
-        .btn-secondary { @apply w-full py-3 px-4 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-xl shadow-sm border border-gray-200 transition-all active:scale-95 flex items-center justify-center gap-2; }
-        .btn-icon { @apply p-2 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors; }
-
-        /* Toast Animation */
-        .toast-enter-active, .toast-leave-active { transition: all 0.3s ease; }
-        .toast-enter-from { transform: translateY(-100%); opacity: 0; }
-        .toast-leave-to { transform: translateY(-100%); opacity: 0; }
+        .btn-primary { @apply w-full py-3 px-4 bg-pink-500 hover:bg-pink-600 text-white font-semibold rounded-xl shadow-md transition-all active:scale-95; }
+        .btn-secondary { @apply w-full py-3 px-4 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-xl shadow-sm border border-gray-200 transition-all active:scale-95; }
+        .product-card { @apply bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100; }
+        .product-image { @apply w-full h-48 object-cover bg-gray-100; }
     </style>
 </head>
 <body class="antialiased text-gray-800 h-screen overflow-hidden flex flex-col">
 
 <div id="app" class="h-full flex flex-col max-w-md mx-auto bg-white shadow-2xl relative overflow-hidden">
     
-    <!-- Toast Notification -->
-    <transition name="toast">
-        <div v-if="toast.show" :key="toast.id" 
-             class="absolute top-4 left-4 right-4 z-50 p-4 rounded-xl shadow-lg flex items-center gap-3"
-             :class="toast.type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'">
-            <span class="text-xl">{{ toast.type === 'error' ? '⚠️' : '✅' }}</span>
-            <span class="font-medium text-sm">{{ toast.message }}</span>
-        </div>
-    </transition>
-
     <!-- Header -->
     <header class="bg-white px-4 py-3 border-b border-gray-100 flex items-center justify-between z-10 shrink-0">
         <div class="flex items-center gap-2" v-if="currentView !== 'home'">
-            <button @click="goHome" class="p-2 -ml-2 text-gray-500 hover:text-pink-500 transition-colors">
+            <button @click="currentView = 'home'" class="p-2 -ml-2 text-gray-500 hover:text-pink-500 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                 </svg>
@@ -54,263 +32,142 @@
             <h1 class="text-lg font-bold text-gray-800">{{ headerTitle }}</h1>
         </div>
         <div v-else class="w-full text-center">
-            <h1 class="text-xl font-bold text-pink-600">🍰 SweetBot</h1>
-        </div>
-        <div v-if="cartCount > 0 && currentView !== 'cart'" class="relative" @click="goToCart">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
-            <span class="absolute -top-2 -right-2 bg-pink-500 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white">{{ cartCount }}</span>
+            <h1 class="text-xl font-bold text-pink-600">🍰 Витрина</h1>
         </div>
     </header>
 
     <!-- Main Content -->
-    <main class="flex-1 overflow-y-auto hide-scrollbar bg-gray-50 relative">
+    <main class="flex-1 overflow-y-auto bg-gray-50">
         <transition name="fade" mode="out-in">
             
-            <!-- 1. HOME MENU -->
+            <!-- 1. Главное меню -->
             <div v-if="currentView === 'home'" key="home" class="p-6 flex flex-col h-full justify-center gap-4">
                 <div class="text-center mb-4">
                     <h2 class="text-2xl font-bold text-gray-800 mb-2">Добро пожаловать!</h2>
-                    <p class="text-gray-500">Выберите действие в меню</p>
+                    <p class="text-gray-500">Свежая выпечка с заботой о вас</p>
                 </div>
                 
-                <button @click="currentView = 'catalog'" class="btn-primary bg-gradient-to-r from-pink-500 to-rose-500 border-none">
-                    <span>🍰</span> Каталог
+                <button @click="currentView = 'catalog'" class="btn-primary bg-gradient-to-r from-pink-500 to-rose-500">
+                    🍰 Смотреть пирожные
                 </button>
-                <button @click="goToCart" class="btn-secondary">
-                    <span>🛒</span> Корзина <span v-if="cartCount > 0" class="ml-auto bg-pink-100 text-pink-600 px-2 py-0.5 rounded-full text-xs">{{ cartCount }} шт.</span>
+                
+                <button @click="currentView = 'contacts'" class="btn-secondary">
+                    📞 Контакты
                 </button>
-                <button @click="goToCheckout" :disabled="cartCount === 0" class="btn-secondary" :class="{'opacity-50 cursor-not-allowed': cartCount === 0}">
-                    <span>📦</span> Оформить заказ
-                </button>
-                <button @click="showToast('info', 'Контакты: +7 (999) 123-45-67\nДоставка: бесплатно от 1000₽')" class="btn-secondary">
-                    <span>📞</span> Контакты / Доставка
+                
+                <button @click="currentView = 'about'" class="btn-secondary">
+                    ℹ️ О нас / Доставка
                 </button>
             </div>
 
-            <!-- 2. CATALOG -->
-            <div v-else-if="currentView === 'catalog'" key="catalog" class="pb-20">
-                <div class="grid grid-cols-1 gap-4 p-4">
-                    <div v-for="product in products" :key="product.id" class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100 flex flex-col">
-                        <div class="h-48 overflow-hidden bg-gray-100 relative">
-                            <img :src="product.image" :alt="product.name" class="w-full h-full object-cover">
-                            <div class="absolute top-2 right-2 bg-white/90 backdrop-blur px-2 py-1 rounded-lg text-sm font-bold text-pink-600 shadow-sm">
-                                {{ product.price }} ₽/шт
-                            </div>
-                        </div>
-                        <div class="p-4 flex-1 flex flex-col">
-                            <h3 class="font-bold text-lg text-gray-800 mb-1">{{ product.name }}</h3>
-                            <p class="text-gray-500 text-sm mb-4 flex-1">{{ product.description }}</p>
-                            
-                            <div class="flex items-center justify-between mt-auto pt-4 border-t border-gray-50">
-                                <span class="text-xs text-gray-400 font-medium">Мин. заказ: 4 шт</span>
-                                <button @click="addToCart(product)" class="bg-pink-50 text-pink-600 hover:bg-pink-100 px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                                    </svg>
-                                    В корзину (4 шт)
+            <!-- 2. Каталог товаров -->
+            <div v-else-if="currentView === 'catalog'" key="catalog" class="p-4 pb-6">
+                <div class="grid grid-cols-1 gap-4">
+                    <div v-for="product in products" :key="product.id" class="product-card">
+                        <img :src="product.image" :alt="product.name" class="product-image">
+                        <div class="p-4">
+                            <h3 class="font-bold text-lg text-gray-800">{{ product.name }}</h3>
+                            <p class="text-gray-500 text-sm mt-1">{{ product.description }}</p>
+                            <div class="flex items-center justify-between mt-4">
+                                <span class="text-xl font-bold text-pink-600">{{ product.price }} ₽</span>
+                                <button @click="showOrderInfo(product)" class="bg-pink-50 text-pink-600 hover:bg-pink-100 px-5 py-2 rounded-lg text-sm font-semibold transition-colors">
+                                    Заказать
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
-                <!-- Floating Cart Button -->
-                <div v-if="cartCount > 0" class="fixed bottom-6 left-4 right-4 max-w-md mx-auto z-20">
-                    <button @click="goToCart" class="w-full bg-gray-900 text-white py-4 rounded-xl shadow-lg flex items-center justify-between px-6 animate-bounce-short">
-                        <div class="flex items-center gap-3">
-                            <div class="bg-white/20 p-2 rounded-lg">
-                                <span class="text-xl">🛒</span>
-                            </div>
-                            <div class="text-left">
-                                <div class="text-xs text-gray-400">В корзине</div>
-                                <div class="font-bold">{{ cartCount }} шт • {{ cartTotal }} ₽</div>
-                            </div>
-                        </div>
-                        <span class="font-semibold">Перейти →</span>
-                    </button>
-                </div>
             </div>
 
-            <!-- 3. CART -->
-            <div v-else-if="currentView === 'cart'" key="cart" class="p-4 pb-32">
-                <div v-if="cart.length === 0" class="flex flex-col items-center justify-center h-64 text-gray-400">
-                    <span class="text-6xl mb-4">🛒</span>
-                    <p>Корзина пуста</p>
-                    <button @click="currentView = 'catalog'" class="mt-4 text-pink-500 font-semibold">Перейти в каталог</button>
-                </div>
-
-                <div v-else class="space-y-4">
-                    <div v-for="item in cartItems" :key="item.id" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex gap-4">
-                        <img :src="item.image" class="w-24 h-24 rounded-xl object-cover bg-gray-100 shrink-0">
-                        <div class="flex-1 flex flex-col justify-between">
+            <!-- 3. Контакты -->
+            <div v-else-if="currentView === 'contacts'" key="contacts" class="p-6">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">📞 Наши контакты</h3>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                            <span class="text-2xl">📱</span>
                             <div>
-                                <h3 class="font-bold text-gray-800">{{ item.name }}</h3>
-                                <div class="text-pink-600 font-bold">{{ item.totalPrice }} ₽</div>
+                                <div class="text-xs text-gray-400">Телефон</div>
+                                <a href="tel:+79937282535" class="text-lg font-semibold text-pink-600">+7 993 728 2535</a>
                             </div>
-                            <div class="flex items-center justify-between mt-2">
-                                <div class="flex items-center gap-3 bg-gray-50 rounded-lg p-1">
-                                    <button @click="updateQuantity(item.id, -4)" class="w-8 h-8 flex items-center justify-center bg-white rounded-md shadow-sm text-gray-600 hover:text-pink-600 disabled:opacity-50" :disabled="item.quantity <= 4">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" /></svg>
-                                    </button>
-                                    <span class="font-bold text-sm w-8 text-center">{{ item.quantity }} шт</span>
-                                    <button @click="updateQuantity(item.id, 4)" class="w-8 h-8 flex items-center justify-center bg-white rounded-md shadow-sm text-gray-600 hover:text-pink-600">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-                                    </button>
-                                </div>
-                                <button @click="removeFromCart(item.id)" class="text-gray-400 hover:text-red-500 p-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                </button>
+                        </div>
+                        
+                        <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                            <span class="text-2xl">💬</span>
+                            <div>
+                                <div class="text-xs text-gray-400">Telegram</div>
+                                <a href="https://t.me/bakary36_bot" class="text-lg font-semibold text-pink-600">@bakary36_bot</a>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                            <span class="text-2xl">🕒</span>
+                            <div>
+                                <div class="text-xs text-gray-400">Время работы</div>
+                                <div class="text-base">Ежедневно 10:00 – 20:00</div>
                             </div>
                         </div>
                     </div>
-
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mt-6">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-gray-500">Итого товаров:</span>
-                            <span class="font-bold">{{ cartCount }} шт</span>
-                        </div>
-                        <div class="flex justify-between items-center text-lg">
-                            <span class="font-bold text-gray-800">Сумма заказа:</span>
-                            <span class="font-bold text-pink-600">{{ cartTotal }} ₽</span>
-                        </div>
-                    </div>
+                    
+                    <button @click="currentView = 'home'" class="btn-secondary mt-6">
+                        ← На главную
+                    </button>
                 </div>
+            </div>
 
-                <!-- Cart Actions -->
-                <div v-if="cart.length > 0" class="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 max-w-md mx-auto">
-                    <div class="flex gap-3">
-                        <button @click="currentView = 'catalog'" class="flex-1 btn-secondary py-3">
-                            🍰 Добавить еще
+            <!-- 4. О нас / Доставка -->
+            <div v-else-if="currentView === 'about'" key="about" class="p-6">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">ℹ️ О нас</h3>
+                    
+                    <div class="space-y-4 text-gray-600">
+                        <p>
+                            <span class="font-bold">Bakary</span> — домашняя выпечка с заботой о каждом госте.
+                            Мы готовим только из натуральных продуктов, без консервантов и искусственных добавок.
+                        </p>
+                        
+                        <div class="bg-pink-50 p-4 rounded-xl">
+                            <h4 class="font-bold text-pink-600 mb-2">🚚 Доставка</h4>
+                            <p>Доставляем по Воронежу бесплатно при заказе от 1000 ₽.</p>
+                            <p class="mt-1">Меньшая сумма — доставка 200 ₽.</p>
+                            <p class="mt-2 text-sm">Заказы принимаем ежедневно до 19:00.</p>
+                        </div>
+                        
+                        <p class="text-sm text-gray-400">
+                            * Все пирожные продаются только наборами от 4 штук.
+                            Цена указана за набор.
+                        </p>
+                    </div>
+                    
+                    <button @click="currentView = 'home'" class="btn-secondary mt-6">
+                        ← На главную
+                    </button>
+                </div>
+            </div>
+
+            <!-- 5. Информация о заказе (всплывающий блок) -->
+            <div v-if="showOrderModal" class="absolute inset-0 bg-black/50 flex items-center justify-center p-4 z-50" @click.self="showOrderModal = false">
+                <div class="bg-white rounded-2xl p-6 max-w-sm w-full">
+                    <h3 class="font-bold text-lg text-gray-800 mb-2">{{ selectedProduct?.name }}</h3>
+                    <p class="text-pink-600 font-bold mb-4">{{ selectedProduct?.price }} ₽ за набор</p>
+                    
+                    <p class="text-gray-600 mb-4">Чтобы заказать, напишите нам в Telegram или позвоните:</p>
+                    
+                    <div class="space-y-3">
+                        <a :href="'https://t.me/bakary36_bot'" target="_blank" class="btn-primary flex items-center justify-center gap-2">
+                            💬 Написать в Telegram
+                        </a>
+                        
+                        <a href="tel:+79937282535" class="btn-secondary flex items-center justify-center gap-2">
+                            📞 Позвонить
+                        </a>
+                        
+                        <button @click="showOrderModal = false" class="text-gray-400 text-sm w-full py-2">
+                            Закрыть
                         </button>
-                        <button @click="goToCheckout" class="flex-[2] btn-primary">
-                            📦 Оформить заказ
-                        </button>
                     </div>
                 </div>
-            </div>
-
-            <!-- 4. CHECKOUT FORM -->
-            <div v-else-if="currentView === 'checkout'" key="checkout" class="p-4 pb-32">
-                <div class="space-y-4">
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">📅 Дата доставки</label>
-                        <input v-model="order.date" type="text" placeholder="Например: 25.02 или завтра" class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all">
-                    </div>
-
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">⏰ Время доставки</label>
-                        <input v-model="order.time" type="text" placeholder="Например: 14:00-16:00" class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all">
-                    </div>
-
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">📍 Адрес доставки</label>
-                        <textarea v-model="order.address" rows="2" placeholder="Улица, дом, квартира, код домофона" class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all resize-none"></textarea>
-                    </div>
-
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">📞 Телефон для связи</label>
-                        <input v-model="order.phone" type="tel" placeholder="+7 999 000-00-00" class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all">
-                    </div>
-
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">💬 Комментарий (необязательно)</label>
-                        <input v-model="order.comment" type="text" placeholder="Позвонить за час..." class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all">
-                    </div>
-                </div>
-
-                <div class="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 max-w-md mx-auto">
-                    <button @click="goToConfirmation" :disabled="!isFormValid" class="btn-primary" :class="{'opacity-50 cursor-not-allowed': !isFormValid}">
-                        Далее: Проверка
-                    </button>
-                </div>
-            </div>
-
-            <!-- 5. CONFIRMATION -->
-            <div v-else-if="currentView === 'confirmation'" key="confirmation" class="p-4 pb-32">
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div class="bg-gray-50 p-4 border-b border-gray-100">
-                        <h3 class="font-bold text-gray-800">Проверьте данные</h3>
-                    </div>
-                    <div class="p-4 space-y-4">
-                        <div>
-                            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Состав заказа</h4>
-                            <div v-for="item in cartItems" :key="item.id" class="flex justify-between text-sm mb-1">
-                                <span>{{ item.name }}</span>
-                                <span class="font-medium">{{ item.quantity }} шт <span class="text-gray-400">({{ item.totalPrice }} ₽)</span></span>
-                            </div>
-                            <div class="border-t border-dashed border-gray-200 mt-2 pt-2 flex justify-between font-bold">
-                                <span>Итого:</span>
-                                <span class="text-pink-600">{{ cartTotal }} ₽</span>
-                            </div>
-                        </div>
-
-                        <div class="space-y-3 pt-2">
-                            <div class="flex items-start gap-3">
-                                <span class="text-xl">📅</span>
-                                <div>
-                                    <div class="text-xs text-gray-400">Дата</div>
-                                    <div class="font-medium">{{ order.date }}</div>
-                                </div>
-                            </div>
-                            <div class="flex items-start gap-3">
-                                <span class="text-xl">⏰</span>
-                                <div>
-                                    <div class="text-xs text-gray-400">Время</div>
-                                    <div class="font-medium">{{ order.time }}</div>
-                                </div>
-                            </div>
-                            <div class="flex items-start gap-3">
-                                <span class="text-xl">📍</span>
-                                <div>
-                                    <div class="text-xs text-gray-400">Адрес</div>
-                                    <div class="font-medium">{{ order.address }}</div>
-                                </div>
-                            </div>
-                            <div class="flex items-start gap-3">
-                                <span class="text-xl">📞</span>
-                                <div>
-                                    <div class="text-xs text-gray-400">Телефон</div>
-                                    <div class="font-medium">{{ order.phone }}</div>
-                                </div>
-                            </div>
-                            <div v-if="order.comment" class="flex items-start gap-3">
-                                <span class="text-xl">💬</span>
-                                <div>
-                                    <div class="text-xs text-gray-400">Комментарий</div>
-                                    <div class="font-medium text-gray-600 italic">«{{ order.comment }}»</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 max-w-md mx-auto space-y-3">
-                    <button @click="submitOrder" class="btn-primary bg-green-500 hover:bg-green-600">
-                        ✅ Подтвердить заказ
-                    </button>
-                    <button @click="currentView = 'checkout'" class="btn-secondary">
-                        ✏️ Редактировать
-                    </button>
-                    <button @click="currentView = 'home'" class="text-gray-400 text-sm font-medium w-full text-center py-2">
-                        ❌ Отменить
-                    </button>
-                </div>
-            </div>
-
-            <!-- 6. SUCCESS -->
-            <div v-else-if="currentView === 'success'" key="success" class="h-full flex flex-col items-center justify-center p-6 text-center">
-                <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-6 animate-bounce-short">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                </div>
-                <h2 class="text-2xl font-bold text-gray-800 mb-2">Заказ #{{ orderId }} принят!</h2>
-                <p class="text-gray-500 mb-8">Скоро с вами свяжется менеджер для подтверждения. Спасибо за заказ ❤️</p>
-                
-                <button @click="resetApp" class="btn-primary w-full max-w-xs">
-                    В главное меню
-                </button>
             </div>
 
         </transition>
@@ -318,261 +175,106 @@
 </div>
 
 <script>
-    const { createApp, ref, computed } = Vue;
+    const { createApp, ref } = Vue;
 
     createApp({
         setup() {
             const currentView = ref('home');
-            const orderId = ref(123);
-            
-            // Toast notification
-            const toast = ref({ show: false, message: '', type: 'success', id: 0 });
-            
-            // Data
+            const showOrderModal = ref(false);
+            const selectedProduct = ref(null);
+
+            // Товары (цены пересчитаны: цена за набор / 4)
             const products = ref([
-    // НАБОРЫ ПИРОЖНЫХ (по 4 шт)
-    { 
-        id: 1, 
-        type: 'set4', 
-        name: 'Павлова с черникой и лимонным курдом (4 шт)', 
-        price: 1300, 
-        description: 'Воздушная меренга, сочная черника и освежающий лимонный курд', 
-        image: 'https://sun9-46.userapi.com/s/v1/ig2/cK7yuBzfPq-caUeAANAHeb0Y6youpfTBYezQapz1kR-tVgcSaM3AGu_PmALhVwFp6_2ytROOAso-dlG-SQsJ9_l1.jpg?quality=95&as=32x43,48x64,72x96,108x144,160x213,240x320,360x480,480x640,540x720,640x853,720x960,960x1280&from=bu&cs=960x0'
-    },
-    
-    // НАБОРЫ ПО ВЕСУ
-    { 
-        id: 2, 
-        type: 'weight', 
-        name: 'Мадлен с ароматом персика (350 г)', 
-        price: 1000, 
-        description: 'Мадлен с ароматом персика, покрытый белой шоколадной глазурью и тонким штрихом съедобного золота', 
-        image: 'https://sun9-3.userapi.com/s/v1/ig2/UoLdQhQnfmx1CZe7vzes5KrkrTYYsMBnCcWEpvBXbJfPaTj_SE-MwU2XFdc2hxvzjxH_U7_7HDOlQzNfIhlQ41IJ.jpg?quality=95&as=32x32,48x48,72x72,108x108,160x160,240x240,360x360,480x480,540x540,640x640,720x720,1080x1080,1280x1280&from=bu&cs=1280x0'
-    },
-    
-    { 
-        id: 3, 
-        type: 'set4', 
-        name: 'Муссовые пирожные киви/клубника (4 шт)', 
-        price: 1400, 
-        description: 'Мусс, сочная начинка из свежей клубники и киви', 
-        image: 'https://sun9-42.userapi.com/s/v1/ig2/bvu5OkGnAV08ejApuyNQNAaR6WogyXHAyZbes4-8XKPwIhnwTbiD0n70bR1Twe63BQDtIiuApRwVJOl88Tz1HcNh.jpg?quality=95&as=32x49,48x74,72x111,108x167,160x247,240x371,360x556,480x741,540x834,640x988,720x1112,829x1280&from=bu&cs=829x0'
-    },
-    
-    { 
-        id: 4, 
-        type: 'set4', 
-        name: 'Муссовые пирожные апельсин (4 шт)', 
-        price: 1400, 
-        description: 'Мусс, сочная начинка из апельсина', 
-        image: 'https://sun9-42.userapi.com/s/v1/ig2/bvu5OkGnAV08ejApuyNQNAaR6WogyXHAyZbes4-8XKPwIhnwTbiD0n70bR1Twe63BQDtIiuApRwVJOl88Tz1HcNh.jpg?quality=95&as=32x49,48x74,72x111,108x167,160x247,240x371,360x556,480x741,540x834,640x988,720x1112,829x1280&from=bu&cs=829x0'
-    },
-    
-    { 
-        id: 5, 
-        type: 'weight', 
-        name: 'Зефир натуральный «Клюква» (350 г)', 
-        price: 850, 
-        description: 'Зефир с насыщенным вкусом свежей клюквы, ягоды и пектин без лишнего сахара', 
-        image: 'https://sun9-46.userapi.com/s/v1/ig2/3UHJrY_j41ibzGK48S77AvKNTzyV8zbJaYZhkO7uqZAGZClKtmJv32BINjTP5H0FokU0fmFqLQoZg9ujdtip3mWd.jpg?quality=95&as=32x71,48x107,72x161,108x241,160x357,240x536,360x804,480x1072,540x1206,573x1280&from=bu&cs=573x0'
-    },
-    
-    { 
-        id: 6, 
-        type: 'set4', 
-        name: 'Павлова «Ягодный крем-чиз» (4 шт)', 
-        price: 1300, 
-        description: 'Лимонный курд, сочные свежие ягоды и фрукты, сверху - воздушный крем-чиз', 
-        image: 'https://sun9-36.userapi.com/s/v1/ig2/KR06rCpX9GrYOREYfAYozf45hYd9q7IQOiKrNeiW7476S5ZQyPEnwoHREzpq7IKWWOAUoyPC-7etiQQC-tetorfk.jpg?quality=95&as=32x43,48x64,72x96,108x144,160x213,240x320,360x480,480x640,540x720,640x853,720x960,960x1280&from=bu&cs=960x0'
-    },
-    
-    { 
-        id: 7, 
-        type: 'weight', 
-        name: 'Меренговые пирожные «Клубника» (250 г)', 
-        price: 1300, 
-        description: 'Клубничный компоте и воздушный крем-чиз', 
-        image: 'https://sun9-15.userapi.com/s/v1/ig2/t4R6xo0xMufxBpxi_z-e1uXZlvhj5VRm4s4PBjjiRiGo0j_DHjhy0j-u-fLDJ2KWO6eOSb_idnkZdyb5EHYu8cN_.jpg?quality=95&as=32x32,48x48,72x72,108x108,160x160,240x240,360x360,480x480,540x540,640x640,720x720,1080x1080,1280x1280&from=bu&cs=1280x0'
-    },
-    
-    { 
-        id: 8, 
-        type: 'weight', 
-        name: 'Зефир натуральный «Банан» (350 г)', 
-        price: 850, 
-        description: 'Зефир с насыщенным вкусом спелого банана, фруктовый пектин', 
-        image: 'https://sun9-66.userapi.com/s/v1/ig2/ThlU_SFO4YFhIdxeR65qMaUNSyugHm7jWXnD6JM5rIn6LAWhc2pbVq-NzkgrOcyp2mODnfUfJ4ss7x5VWMqCUVMs.jpg?quality=95&as=32x43,48x64,72x96,108x144,160x213,240x320,360x480,480x640,540x720,640x853,720x960,960x1280&from=bu&cs=960x0'
-    },
-    
-    { 
-        id: 9, 
-        type: 'set4', 
-        name: 'Муссовые пирожные «Клубничный шик» (4 шт)', 
-        price: 1500, 
-        description: 'Мусс, клубничное компоте, глазурь белого шоколада, хрустящий миндаль и сливочный крем-чиз', 
-        image: 'https://sun9-58.userapi.com/s/v1/ig2/4tZCTMC9SX13U_Wuf4W-MNFfX-qxdhf3rGSMjRPYN98rPcbyP2DI-Ti4_FoAKhyYygq3n8xWpQdn4NX6GqUqXhjl.jpg?quality=95&as=32x43,48x64,72x96,108x144,160x213,240x320,360x480,480x640,540x720,640x853,720x960,960x1280&from=bu&cs=960x0'
-    }
-]);
+                { 
+                    id: 1, 
+                    name: 'Павлова с черникой (4 шт)', 
+                    price: 1300, 
+                    description: 'Воздушная меренга, сочная черника и лимонный курд', 
+                    image: 'https://sun9-46.userapi.com/s/v1/ig2/cK7yuBzfPq-caUeAANAHeb0Y6youpfTBYezQapz1kR-tVgcSaM3AGu_PmALhVwFp6_2ytROOAso-dlG-SQsJ9_l1.jpg?quality=95&as=32x43,48x64,72x96,108x144,160x213,240x320,360x480,480x640,540x720,640x853,720x960,960x1280&from=bu&cs=960x0'
+                },
+                { 
+                    id: 2, 
+                    name: 'Мадлен с персиком (350 г)', 
+                    price: 1000, 
+                    description: 'Нежные бисквитные пирожные в белом шоколаде', 
+                    image: 'https://sun9-3.userapi.com/s/v1/ig2/UoLdQhQnfmx1CZe7vzes5KrkrTYYsMBnCcWEpvBXbJfPaTj_SE-MwU2XFdc2hxvzjxH_U7_7HDOlQzNfIhlQ41IJ.jpg?quality=95&as=32x32,48x48,72x72,108x108,160x160,240x240,360x360,480x480,540x540,640x640,720x720,1080x1080,1280x1280&from=bu&cs=1280x0'
+                },
+                { 
+                    id: 3, 
+                    name: 'Муссовые киви/клубника (4 шт)', 
+                    price: 1400, 
+                    description: 'Мусс с начинкой из свежих ягод', 
+                    image: 'https://sun9-42.userapi.com/s/v1/ig2/bvu5OkGnAV08ejApuyNQNAaR6WogyXHAyZbes4-8XKPwIhnwTbiD0n70bR1Twe63BQDtIiuApRwVJOl88Tz1HcNh.jpg?quality=95&as=32x49,48x74,72x111,108x167,160x247,240x371,360x556,480x741,540x834,640x988,720x1112,829x1280&from=bu&cs=829x0'
+                },
+                { 
+                    id: 4, 
+                    name: 'Муссовые апельсин (4 шт)', 
+                    price: 1400, 
+                    description: 'Яркий мусс с апельсиновой начинкой', 
+                    image: 'https://sun9-42.userapi.com/s/v1/ig2/bvu5OkGnAV08ejApuyNQNAaR6WogyXHAyZbes4-8XKPwIhnwTbiD0n70bR1Twe63BQDtIiuApRwVJOl88Tz1HcNh.jpg?quality=95&as=32x49,48x74,72x111,108x167,160x247,240x371,360x556,480x741,540x834,640x988,720x1112,829x1280&from=bu&cs=829x0'
+                },
+                { 
+                    id: 5, 
+                    name: 'Зефир «Клюква» (350 г)', 
+                    price: 850, 
+                    description: 'Натуральный зефир без лишнего сахара', 
+                    image: 'https://sun9-46.userapi.com/s/v1/ig2/3UHJrY_j41ibzGK48S77AvKNTzyV8zbJaYZhkO7uqZAGZClKtmJv32BINjTP5H0FokU0fmFqLQoZg9ujdtip3mWd.jpg?quality=95&as=32x71,48x107,72x161,108x241,160x357,240x536,360x804,480x1072,540x1206,573x1280&from=bu&cs=573x0'
+                },
+                { 
+                    id: 6, 
+                    name: 'Павлова ягодный крем-чиз (4 шт)', 
+                    price: 1300, 
+                    description: 'Меренга, ягоды, воздушный крем-чиз', 
+                    image: 'https://sun9-36.userapi.com/s/v1/ig2/KR06rCpX9GrYOREYfAYozf45hYd9q7IQOiKrNeiW7476S5ZQyPEnwoHREzpq7IKWWOAUoyPC-7etiQQC-tetorfk.jpg?quality=95&as=32x43,48x64,72x96,108x144,160x213,240x320,360x480,480x640,540x720,640x853,720x960,960x1280&from=bu&cs=960x0'
+                },
+                { 
+                    id: 7, 
+                    name: 'Меренговые «Клубника» (250 г)', 
+                    price: 1300, 
+                    description: 'Хрустящая меренга с клубничным компоте', 
+                    image: 'https://sun9-15.userapi.com/s/v1/ig2/t4R6xo0xMufxBpxi_z-e1uXZlvhj5VRm4s4PBjjiRiGo0j_DHjhy0j-u-fLDJ2KWO6eOSb_idnkZdyb5EHYu8cN_.jpg?quality=95&as=32x32,48x48,72x72,108x108,160x160,240x240,360x360,480x480,540x540,640x640,720x720,1080x1080,1280x1280&from=bu&cs=1280x0'
+                },
+                { 
+                    id: 8, 
+                    name: 'Зефир «Банан» (350 г)', 
+                    price: 850, 
+                    description: 'Зефир со вкусом спелого банана', 
+                    image: 'https://sun9-66.userapi.com/s/v1/ig2/ThlU_SFO4YFhIdxeR65qMaUNSyugHm7jWXnD6JM5rIn6LAWhc2pbVq-NzkgrOcyp2mODnfUfJ4ss7x5VWMqCUVMs.jpg?quality=95&as=32x43,48x64,72x96,108x144,160x213,240x320,360x480,480x640,540x720,640x853,720x960,960x1280&from=bu&cs=960x0'
+                },
+                { 
+                    id: 9, 
+                    name: 'Муссовые «Клубничный шик» (4 шт)', 
+                    price: 1500, 
+                    description: 'Мусс, клубничное компоте, миндаль', 
+                    image: 'https://sun9-58.userapi.com/s/v1/ig2/4tZCTMC9SX13U_Wuf4W-MNFfX-qxdhf3rGSMjRPYN98rPcbyP2DI-Ti4_FoAKhyYygq3n8xWpQdn4NX6GqUqXhjl.jpg?quality=95&as=32x43,48x64,72x96,108x144,160x213,240x320,360x480,480x640,540x720,640x853,720x960,960x1280&from=bu&cs=960x0'
+                }
+            ]);
 
-            const cart = ref([]);
-            
-            const order = ref({
-                date: '',
-                time: '',
-                address: '',
-                phone: '',
-                comment: ''
-            });
-
-            // Computed
             const headerTitle = computed(() => {
                 const titles = {
                     home: 'Главная',
-                    catalog: 'Каталог',
-                    cart: 'Корзина',
-                    checkout: 'Оформление',
-                    confirmation: 'Подтверждение',
-                    success: 'Готово'
+                    catalog: 'Наши пирожные',
+                    contacts: 'Контакты',
+                    about: 'О нас'
                 };
-                return titles[currentView.value] || 'Бот';
+                return titles[currentView.value] || 'Витрина';
             });
 
-            const cartItems = computed(() => {
-                return cart.value.map(item => {
-                    const product = products.value.find(p => p.id === item.id);
-                    return {
-                        ...item,
-                        name: product.name,
-                        price: product.price,
-                        image: product.image,
-                        totalPrice: item.quantity * product.price
-                    };
-                });
-            });
-
-            const cartCount = computed(() => {
-                return cart.value.reduce((acc, item) => acc + item.quantity, 0);
-            });
-
-            const cartTotal = computed(() => {
-                return cart.value.reduce((acc, item) => {
-                    const product = products.value.find(p => p.id === item.id);
-                    return acc + (item.quantity * product.price);
-                }, 0);
-            });
-
-            const isFormValid = computed(() => {
-                return order.value.date && order.value.time && order.value.address && order.value.phone;
-            });
-
-            // Methods
-            const showToast = (type, message) => {
-                toast.value.id = Date.now();
-                toast.value.type = type;
-                toast.value.message = message;
-                toast.value.show = true;
-                setTimeout(() => {
-                    toast.value.show = false;
-                }, 3000);
-            };
-
-            const goToCart = () => {
-                if (cart.value.length === 0) {
-                    showToast('error', 'Корзина пуста! Добавьте товары из каталога.');
-                    return;
-                }
-                currentView.value = 'cart';
-            };
-
-            const goToCheckout = () => {
-                if (cart.value.length === 0) {
-                    showToast('error', 'Корзина пуста! Добавьте товары из каталога.');
-                    return;
-                }
-                currentView.value = 'checkout';
-            };
-
-            const goToConfirmation = () => {
-                if (!isFormValid.value) {
-                    showToast('error', 'Заполните все обязательные поля!');
-                    return;
-                }
-                currentView.value = 'confirmation';
-            };
-
-            const addToCart = (product) => {
-                const existingItem = cart.value.find(item => item.id === product.id);
-                if (existingItem) {
-                    existingItem.quantity += 4;
-                } else {
-                    cart.value.push({ id: product.id, quantity: 4 });
-                }
-                showToast('success', `${product.name} добавлен в корзину (4 шт)`);
-            };
-
-            const updateQuantity = (id, delta) => {
-                const item = cart.value.find(i => i.id === id);
-                if (item) {
-                    const newQty = item.quantity + delta;
-                    if (newQty >= 4) {
-                        item.quantity = newQty;
-                    } else if (newQty < 4) {
-                        removeFromCart(id);
-                        showToast('info', 'Товар удалён из корзины');
-                    }
-                }
-            };
-
-            const removeFromCart = (id) => {
-                const item = cart.value.find(i => i.id === id);
-                cart.value = cart.value.filter(item => item.id !== id);
-                if (item) {
-                    showToast('info', `${item.name} удалён из корзины`);
-                }
-            };
-
-            const submitOrder = () => {
-                setTimeout(() => {
-                    currentView.value = 'success';
-                    orderId.value++;
-                }, 500);
-            };
-
-            const resetApp = () => {
-                cart.value = [];
-                order.value = { date: '', time: '', address: '', phone: '', comment: '' };
-                currentView.value = 'home';
-            };
-
-            const goHome = () => {
-                currentView.value = 'home';
+            const showOrderInfo = (product) => {
+                selectedProduct.value = product;
+                showOrderModal.value = true;
             };
 
             return {
                 currentView,
                 headerTitle,
                 products,
-                cartItems,
-                cartCount,
-                cartTotal,
-                order,
-                isFormValid,
-                orderId,
-                toast,
-                addToCart,
-                updateQuantity,
-                removeFromCart,
-                submitOrder,
-                resetApp,
-                goHome,
-                goToCart,
-                goToCheckout,
-                goToConfirmation,
-                showToast
+                showOrderModal,
+                selectedProduct,
+                showOrderInfo
             };
         }
     }).mount('#app');
 </script>
 </body>
 </html>
-
