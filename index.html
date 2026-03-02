@@ -1,330 +1,239 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Витрина | Нежные десерты</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
-        .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
-        .fade-enter-from, .fade-leave-to { opacity: 0; }
-        
-        .btn-primary {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            background-color: #ec4899;
-            color: white;
-            font-weight: 600;
-            border-radius: 0.75rem;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-        .btn-primary:hover { background-color: #db2777; }
-        .btn-primary:active { transform: scale(0.95); }
-        
-        .btn-secondary {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            background-color: white;
-            color: #374151;
-            font-weight: 600;
-            border-radius: 0.75rem;
-            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            border: 1px solid #e5e7eb;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-        .btn-secondary:hover { background-color: #f9fafb; }
-        .btn-secondary:active { transform: scale(0.95); }
-        
-        .product-card {
-            background-color: white;
-            border-radius: 1rem;
-            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            overflow: hidden;
-            border: 1px solid #f3f4f6;
-        }
-        
-        .product-image {
-            width: 100%;
-            height: 12rem;
-            object-fit: cover;
-            background-color: #f3f4f6;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Витрина | Нежные десерты</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+    .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+    .fade-enter-from, .fade-leave-to { opacity: 0; }
+
+    .btn-primary {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background-color: #ec4899;
+      color: white;
+      font-weight: 600;
+      border-radius: 0.75rem;
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .btn-primary:hover { background-color: #db2777; }
+    .btn-primary:active { transform: scale(0.95); }
+
+    .btn-secondary {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background-color: white;
+      color: #374151;
+      font-weight: 600;
+      border-radius: 0.75rem;
+      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      border: 1px solid #e5e7eb;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .btn-secondary:hover { background-color: #f9fafb; }
+    .btn-secondary:active { transform: scale(0.95); }
+
+    .product-card {
+      background-color: white;
+      border-radius: 1rem;
+      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      overflow: hidden;
+      border: 1px solid #f3f4f6;
+    }
+
+    /* уменьшили высоту фото */
+    .product-image {
+      width: 100%;
+      height: 8rem; /* было 12rem */
+      object-fit: cover;
+      background-color: #f3f4f6;
+    }
+  </style>
 </head>
 <body class="antialiased text-gray-800 h-screen overflow-hidden flex flex-col">
 
-<div id="app" class="h-full flex flex-col max-w-md mx-auto bg-white shadow-2xl relative overflow-hidden">
-    
-    <!-- Header -->
-    <header class="bg-white px-4 py-3 border-b border-gray-100 flex items-center justify-between z-10 shrink-0">
-        <div class="flex items-center gap-2" v-if="currentView !== 'home'">
-            <button @click="currentView = 'home'" class="p-2 -ml-2 text-gray-500 hover:text-pink-500 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                </svg>
-            </button>
-            <h1 class="text-lg font-bold text-gray-800">{{ headerTitle }}</h1>
+<div id="app"
+     class="h-full flex flex-col max-w-md mx-auto bg-white shadow-2xl relative overflow-hidden">
+
+  <!-- Header -->
+  <header class="bg-white px-4 py-3 border-b border-gray-100 flex items-center justify-between z-10 shrink-0">
+    <div class="flex items-center gap-2" v-if="currentView !== 'home'">
+      <button @click="currentView = 'home'"
+              class="p-2 -ml-2 text-gray-500 hover:text-pink-500 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg"
+             class="h-6 w-6"
+             fill="none"
+             viewBox="0 0 24 24"
+             stroke="currentColor">
+          <path stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+      <h1 class="text-lg font-bold text-gray-800">{{ headerTitle }}</h1>
+    </div>
+    <div v-else class="w-full text-center">
+      <h1 class="text-xl font-bold text-pink-600">🍰 Витрина</h1>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 overflow-y-auto bg-gray-50">
+    <transition name="fade" mode="out-in">
+
+      <!-- 1. Главное меню -->
+      <div v-if="currentView === 'home'"
+           key="home"
+           class="p-6 flex flex-col h-full justify-center gap-4">
+        <div class="text-center mb-4">
+          <h2 class="text-2xl font-bold text-gray-800 mb-2">Добро пожаловать!</h2>
+          <p class="text-gray-500">Свежая выпечка с заботой о вас</p>
         </div>
-        <div v-else class="w-full text-center">
-            <h1 class="text-xl font-bold text-pink-600">🍰 Витрина</h1>
+
+        <button @click="currentView = 'catalog'"
+                class="btn-primary"
+                style="background: linear-gradient(to right, #ec4899, #f43f5e);">
+          🍰 Смотреть пирожные
+        </button>
+
+        <button @click="currentView = 'contacts'" class="btn-secondary">
+          📞 Контакты
+        </button>
+
+        <button @click="currentView = 'about'" class="btn-secondary">
+          ℹ️ О нас / Доставка
+        </button>
+      </div>
+
+      <!-- 2. Каталог товаров -->
+      <div v-else-if="currentView === 'catalog'" key="catalog" class="p-4 pb-6">
+        <div class="grid grid-cols-1 gap-4">
+          <div v-for="product in products"
+               :key="product.id"
+               class="product-card">
+            <img :src="product.image"
+                 :alt="product.name"
+                 class="product-image">
+            <div class="p-4">
+              <h3 class="font-bold text-lg text-gray-800">{{ product.name }}</h3>
+              <p class="text-gray-500 text-sm mt-1">{{ product.description }}</p>
+              <div class="flex items-center justify-between mt-4">
+                <span class="text-xl font-bold text-pink-600">{{ product.price }} ₽</span>
+                <!-- Заказать: открываем ЛС @MypMir с текстом -->
+                <a :href="getTelegramLink(product)"
+                   target="_blank"
+                   class="bg-pink-50 text-pink-600 hover:bg-pink-100 px-5 py-2 rounded-lg text-sm font-semibold transition-colors">
+                  Заказать
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
-    </header>
+      </div>
 
-    <!-- Main Content -->
-    <main class="flex-1 overflow-y-auto bg-gray-50">
-        <transition name="fade" mode="out-in">
-            
-            <!-- Главное меню -->
-            <div v-if="currentView === 'home'" key="home" class="p-6 flex flex-col h-full justify-center gap-4">
-                <div class="text-center mb-4">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Добро пожаловать!</h2>
-                    <p class="text-gray-500">Свежая выпечка с заботой о вас</p>
-                </div>
-                
-                <button @click="currentView = 'catalog'" class="btn-primary" style="background: linear-gradient(to right, #ec4899, #f43f5e);">
-                    🍰 Смотреть пирожные
-                </button>
-                
-                <button @click="currentView = 'contacts'" class="btn-secondary">
-                    📞 Контакты
-                </button>
-                
-                <button @click="currentView = 'about'" class="btn-secondary">
-                    ℹ️ О нас / Доставка
-                </button>
+      <!-- 3. Контакты -->
+      <div v-else-if="currentView === 'contacts'" key="contacts" class="p-6">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <h3 class="text-xl font-bold text-gray-800 mb-4">📞 Наши контакты</h3>
+
+          <div class="space-y-4">
+            <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+              <span class="text-2xl">📱</span>
+              <div>
+                <div class="text-xs text-gray-400">Телефон</div>
+                <a href="tel:+79937282535"
+                   class="text-lg font-semibold text-pink-600">+7 993 728 2535</a>
+              </div>
             </div>
 
-            <!-- Каталог -->
-            <div v-else-if="currentView === 'catalog'" key="catalog" class="p-4 pb-6">
-                <div class="grid grid-cols-1 gap-4">
-                    <div v-for="product in products" :key="product.id" class="product-card">
-                        <img :src="product.image" :alt="product.name" class="product-image">
-                        <div class="p-4">
-                            <h3 class="font-bold text-lg text-gray-800">{{ product.name }}</h3>
-                            <p class="text-gray-500 text-sm mt-1">{{ product.description }}</p>
-                            <div class="flex items-center justify-between mt-4">
-                                <span class="text-xl font-bold text-pink-600">{{ product.price }} ₽</span>
-                                <button @click="showOrderInfo(product)" class="bg-pink-50 text-pink-600 hover:bg-pink-100 px-5 py-2 rounded-lg text-sm font-semibold transition-colors">
-                                    Заказать
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+              <span class="text-2xl">💬</span>
+              <div>
+                <div class="text-xs text-gray-400">Telegram</div>
+                <a href="https://t.me/MypMir"
+                   class="text-lg font-semibold text-pink-600">@MypMir</a>
+              </div>
             </div>
 
-            <!-- Контакты -->
-            <div v-else-if="currentView === 'contacts'" key="contacts" class="p-6">
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                    <h3 class="text-xl font-bold text-gray-800 mb-4">📞 Наши контакты</h3>
-                    
-                    <div class="space-y-4">
-                        <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                            <span class="text-2xl">📱</span>
-                            <div>
-                                <div class="text-xs text-gray-400">Телефон</div>
-                                <a href="tel:+79937282535" class="text-lg font-semibold text-pink-600">+7 993 728 2535</a>
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                            <span class="text-2xl">💬</span>
-                            <div>
-                                <div class="text-xs text-gray-400">Telegram</div>
-                                <a href="https://t.me/bakary36_bot" class="text-lg font-semibold text-pink-600">@bakary36_bot</a>
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                            <span class="text-2xl">🕒</span>
-                            <div>
-                                <div class="text-xs text-gray-400">Время работы</div>
-                                <div class="text-base">Ежедневно 10:00 – 20:00</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <button @click="currentView = 'home'" class="btn-secondary mt-6">
-                        ← На главную
-                    </button>
-                </div>
+            <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+              <span class="text-2xl">🕒</span>
+              <div>
+                <div class="text-xs text-gray-400">Время работы</div>
+                <div class="text-base">Ежедневно 10:00 – 20:00</div>
+              </div>
+            </div>
+          </div>
+
+          <button @click="currentView = 'home'" class="btn-secondary mt-6">
+            ← На главную
+          </button>
+        </div>
+      </div>
+
+      <!-- 4. О нас / Доставка -->
+      <div v-else-if="currentView === 'about'" key="about" class="p-6">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <h3 class="text-xl font-bold text-gray-800 mb-4">ℹ️ О нас</h3>
+
+          <div class="space-y-4 text-gray-600">
+            <p>
+              <span class="font-bold">Bakary</span> — домашняя выпечка с заботой о каждом госте.
+              Мы готовим только из натуральных продуктов, без консервантов и искусственных добавок.
+            </p>
+
+            <div class="bg-pink-50 p-4 rounded-xl">
+              <h4 class="font-bold text-pink-600 mb-2">🚚 Доставка</h4>
+              <p>Доставляем по Воронежу бесплатно при заказе от 2000 ₽.</p>
+              <p class="mt-1">При меньшей сумме — доставка 200 ₽.</p>
+              <p class="mt-2 text-sm">Заказы принимаем ежедневно до 19:00.</p>
             </div>
 
-            <!-- О нас / Доставка -->
-            <div v-else-if="currentView === 'about'" key="about" class="p-6">
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                    <h3 class="text-xl font-bold text-gray-800 mb-4">ℹ️ О нас</h3>
-                    
-                    <div class="space-y-4 text-gray-600">
-                        <p>
-                            <span class="font-bold">Bakary</span> — домашняя выпечка с заботой о каждом госте.
-                            Мы готовим только из натуральных продуктов, без консервантов и искусственных добавок.
-                        </p>
-                        
-                        <div class="bg-pink-50 p-4 rounded-xl">
-                            <h4 class="font-bold text-pink-600 mb-2">🚚 Доставка</h4>
-                            <p>Доставляем по Воронежу бесплатно при заказе от 2000 ₽.</p>
-                            <p class="mt-1">Меньшая сумма — доставка 200 ₽.</p>
-                            <p class="mt-2 text-sm">Заказы принимаем ежедневно до 19:00.</p>
-                        </div>
-                        
-                        <p class="text-sm text-gray-400">
-                            * Все пирожные продаются только наборами от 4 штук.
-                            Цена указана за набор.
-                        </p>
-                    </div>
-                    
-                    <button @click="currentView = 'home'" class="btn-secondary mt-6">
-                        ← На главную
-                    </button>
-                </div>
-            </div>
+            <p class="text-sm text-gray-400">
+              * Все пирожные продаются только наборами от 4 штук.
+              Цена указана за набор.
+            </p>
+          </div>
 
-            <!-- Модалка заказа -->
-            <div v-if="showOrderModal" class="absolute inset-0 bg-black/50 flex items-center justify-center p-4 z-50" @click.self="showOrderModal = false">
-                <div class="bg-white rounded-2xl p-6 max-w-sm w-full">
-                    <h3 class="font-bold text-lg text-gray-800 mb-2">{{ selectedProduct?.name }}</h3>
-                    <p class="text-pink-600 font-bold mb-4">{{ selectedProduct?.price }} ₽ за набор</p>
-                    
-                    <p class="text-gray-600 mb-4">Чтобы заказать, напишите нам в Telegram или позвоните:</p>
-                    
-                    <div class="space-y-3">
-                        <!-- Кнопка с готовым текстом о товаре -->
-                        <a :href="'https://t.me/bakary36_bot?text=Хочу заказать: ' + encodeURIComponent(selectedProduct?.name)" 
-                           target="_blank" 
-                           class="btn-primary flex items-center justify-center gap-2" 
-                           style="background-color: #ec4899;">
-                            💬 Написать в Telegram
-                        </a>
-                        
-                        <a href="tel:+79937282535" class="btn-secondary flex items-center justify-center gap-2">
-                            📞 Позвонить
-                        </a>
-                        
-                        <button @click="showOrderModal = false" class="text-gray-400 text-sm w-full py-2">
-                            Закрыть
-                        </button>
-                    </div>
-                </div>
-            </div>
+          <button @click="currentView = 'home'" class="btn-secondary mt-6">
+            ← На главную
+          </button>
+        </div>
+      </div>
 
-        </transition>
-    </main>
+      <!-- 5. Всплывающий блок можно убрать, но оставлю как пример;
+           теперь он не нужен для перехода в Telegram -->
+
+    </transition>
+  </main>
 </div>
 
 <script>
-    const { createApp, ref, computed } = Vue;
+  const { createApp, ref, computed } = Vue;
 
-    createApp({
-        setup() {
-            const currentView = ref('home');
-            const showOrderModal = ref(false);
-            const selectedProduct = ref(null);
+  createApp({
+    setup() {
+      const currentView = ref('home');
 
-            // Товары (цены за набор, фото уменьшены до 480px)
-            const products = ref([
-                { 
-                    id: 1, 
-                    name: 'Павлова с черникой (4 шт)', 
-                    price: 1300, 
-                    description: 'Воздушная меренга, сочная черника и лимонный курд', 
-                    image: 'https://sun9-46.userapi.com/s/v1/ig2/cK7yuBzfPq-caUeAANAHeb0Y6youpfTBYezQapz1kR-tVgcSaM3AGu_PmALhVwFp6_2ytROOAso-dlG-SQsJ9_l1.jpg?quality=95&as=32x43,48x64,72x96,108x144,160x213,240x320,360x480,480x640,540x720,640x853,720x960,960x1280&from=bu&cs=480x0'
-                },
-                { 
-                    id: 2, 
-                    name: 'Мадлен с персиком (350 г)', 
-                    price: 1000, 
-                    description: 'Нежные бисквитные пирожные в белом шоколаде', 
-                    image: 'https://sun9-3.userapi.com/s/v1/ig2/UoLdQhQnfmx1CZe7vzes5KrkrTYYsMBnCcWEpvBXbJfPaTj_SE-MwU2XFdc2hxvzjxH_U7_7HDOlQzNfIhlQ41IJ.jpg?quality=95&as=32x32,48x48,72x72,108x108,160x160,240x240,360x360,480x480,540x540,640x640,720x720,1080x1080,1280x1280&from=bu&cs=480x0'
-                },
-                { 
-                    id: 3, 
-                    name: 'Муссовые киви/клубника (4 шт)', 
-                    price: 1400, 
-                    description: 'Мусс с начинкой из свежих ягод', 
-                    image: 'https://sun9-42.userapi.com/s/v1/ig2/bvu5OkGnAV08ejApuyNQNAaR6WogyXHAyZbes4-8XKPwIhnwTbiD0n70bR1Twe63BQDtIiuApRwVJOl88Tz1HcNh.jpg?quality=95&as=32x49,48x74,72x111,108x167,160x247,240x371,360x556,480x741,540x834,640x988,720x1112,829x1280&from=bu&cs=480x0'
-                },
-                { 
-                    id: 4, 
-                    name: 'Муссовые апельсин (4 шт)', 
-                    price: 1400, 
-                    description: 'Яркий мусс с апельсиновой начинкой', 
-                    image: 'https://sun9-42.userapi.com/s/v1/ig2/bvu5OkGnAV08ejApuyNQNAaR6WogyXHAyZbes4-8XKPwIhnwTbiD0n70bR1Twe63BQDtIiuApRwVJOl88Tz1HcNh.jpg?quality=95&as=32x49,48x74,72x111,108x167,160x247,240x371,360x556,480x741,540x834,640x988,720x1112,829x1280&from=bu&cs=480x0'
-                },
-                { 
-                    id: 5, 
-                    name: 'Зефир «Клюква» (350 г)', 
-                    price: 850, 
-                    description: 'Натуральный зефир без лишнего сахара', 
-                    image: 'https://sun9-46.userapi.com/s/v1/ig2/3UHJrY_j41ibzGK48S77AvKNTzyV8zbJaYZhkO7uqZAGZClKtmJv32BINjTP5H0FokU0fmFqLQoZg9ujdtip3mWd.jpg?quality=95&as=32x71,48x107,72x161,108x241,160x357,240x536,360x804,480x1072,540x1206,573x1280&from=bu&cs=480x0'
-                },
-                { 
-                    id: 6, 
-                    name: 'Павлова ягодный крем-чиз (4 шт)', 
-                    price: 1300, 
-                    description: 'Меренга, ягоды, воздушный крем-чиз', 
-                    image: 'https://sun9-36.userapi.com/s/v1/ig2/KR06rCpX9GrYOREYfAYozf45hYd9q7IQOiKrNeiW7476S5ZQyPEnwoHREzpq7IKWWOAUoyPC-7etiQQC-tetorfk.jpg?quality=95&as=32x43,48x64,72x96,108x144,160x213,240x320,360x480,480x640,540x720,640x853,720x960,960x1280&from=bu&cs=480x0'
-                },
-                { 
-                    id: 7, 
-                    name: 'Меренговые «Клубника» (250 г)', 
-                    price: 1300, 
-                    description: 'Хрустящая меренга с клубничным компоте', 
-                    image: 'https://sun9-15.userapi.com/s/v1/ig2/t4R6xo0xMufxBpxi_z-e1uXZlvhj5VRm4s4PBjjiRiGo0j_DHjhy0j-u-fLDJ2KWO6eOSb_idnkZdyb5EHYu8cN_.jpg?quality=95&as=32x32,48x48,72x72,108x108,160x160,240x240,360x360,480x480,540x540,640x640,720x720,1080x1080,1280x1280&from=bu&cs=480x0'
-                },
-                { 
-                    id: 8, 
-                    name: 'Зефир «Банан» (350 г)', 
-                    price: 850, 
-                    description: 'Зефир со вкусом спелого банана', 
-                    image: 'https://sun9-66.userapi.com/s/v1/ig2/ThlU_SFO4YFhIdxeR65qMaUNSyugHm7jWXnD6JM5rIn6LAWhc2pbVq-NzkgrOcyp2mODnfUfJ4ss7x5VWMqCUVMs.jpg?quality=95&as=32x43,48x64,72x96,108x144,160x213,240x320,360x480,480x640,540x720,640x853,720x960,960x1280&from=bu&cs=480x0'
-                },
-                { 
-                    id: 9, 
-                    name: 'Муссовые «Клубничный шик» (4 шт)', 
-                    price: 1500, 
-                    description: 'Мусс, клубничное компоте, миндаль', 
-                    image: 'https://sun9-58.userapi.com/s/v1/ig2/4tZCTMC9SX13U_Wuf4W-MNFfX-qxdhf3rGSMjRPYN98rPcbyP2DI-Ti4_FoAKhyYygq3n8xWpQdn4NX6GqUqXhjl.jpg?quality=95&as=32x43,48x64,72x96,108x144,160x213,240x320,360x480,480x640,540x720,640x853,720x960,960x1280&from=bu&cs=480x0'
-                }
-            ]);
-
-            const headerTitle = computed(() => {
-                const titles = {
-                    home: 'Главная',
-                    catalog: 'Наши пирожные',
-                    contacts: 'Контакты',
-                    about: 'О нас'
-                };
-                return titles[currentView.value] || 'Витрина';
-            });
-
-            const showOrderInfo = (product) => {
-                selectedProduct.value = product;
-                showOrderModal.value = true;
-            };
-
-            return {
-                currentView,
-                headerTitle,
-                products,
-                showOrderModal,
-                selectedProduct,
-                showOrderInfo
-            };
-        }
-    }).mount('#app');
-</script>
-</body>
-</html>
+      const products = ref([
+        {
+          id: 1,
+          name: 'Павлова с черникой (4 шт)',
+          price: 1300,
+          description: 'Воздушная
