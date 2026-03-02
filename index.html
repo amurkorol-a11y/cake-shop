@@ -11,10 +11,65 @@
         body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
         .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
         .fade-enter-from, .fade-leave-to { opacity: 0; }
-        .btn-primary { @apply w-full py-3 px-4 bg-pink-500 hover:bg-pink-600 text-white font-semibold rounded-xl shadow-md transition-all active:scale-95; }
-        .btn-secondary { @apply w-full py-3 px-4 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-xl shadow-sm border border-gray-200 transition-all active:scale-95; }
-        .product-card { @apply bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100; }
-        .product-image { @apply w-full h-48 object-cover bg-gray-100; }
+        
+        /* Обычные CSS-классы вместо @apply */
+        .btn-primary {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background-color: #ec4899;
+            color: white;
+            font-weight: 600;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .btn-primary:hover {
+            background-color: #db2777;
+        }
+        .btn-primary:active {
+            transform: scale(0.95);
+        }
+        
+        .btn-secondary {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background-color: white;
+            color: #374151;
+            font-weight: 600;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            border: 1px solid #e5e7eb;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .btn-secondary:hover {
+            background-color: #f9fafb;
+        }
+        .btn-secondary:active {
+            transform: scale(0.95);
+        }
+        
+        .product-card {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            overflow: hidden;
+            border: 1px solid #f3f4f6;
+        }
+        
+        .product-image {
+            width: 100%;
+            height: 12rem;
+            object-fit: cover;
+            background-color: #f3f4f6;
+        }
     </style>
 </head>
 <body class="antialiased text-gray-800 h-screen overflow-hidden flex flex-col">
@@ -47,7 +102,7 @@
                     <p class="text-gray-500">Свежая выпечка с заботой о вас</p>
                 </div>
                 
-                <button @click="currentView = 'catalog'" class="btn-primary bg-gradient-to-r from-pink-500 to-rose-500">
+                <button @click="currentView = 'catalog'" class="btn-primary" style="background: linear-gradient(to right, #ec4899, #f43f5e);">
                     🍰 Смотреть пирожные
                 </button>
                 
@@ -155,7 +210,7 @@
                     <p class="text-gray-600 mb-4">Чтобы заказать, напишите нам в Telegram или позвоните:</p>
                     
                     <div class="space-y-3">
-                        <a :href="'https://t.me/bakary36_bot'" target="_blank" class="btn-primary flex items-center justify-center gap-2">
+                        <a :href="'https://t.me/bakary36_bot'" target="_blank" class="btn-primary flex items-center justify-center gap-2" style="background-color: #ec4899;">
                             💬 Написать в Telegram
                         </a>
                         
@@ -175,7 +230,7 @@
 </div>
 
 <script>
-    const { createApp, ref } = Vue;
+    const { createApp, ref, computed } = Vue;
 
     createApp({
         setup() {
@@ -183,7 +238,7 @@
             const showOrderModal = ref(false);
             const selectedProduct = ref(null);
 
-            // Товары (цены пересчитаны: цена за набор / 4)
+            // Товары (цены за набор)
             const products = ref([
                 { 
                     id: 1, 
