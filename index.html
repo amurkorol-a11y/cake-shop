@@ -55,13 +55,22 @@
       box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
       overflow: hidden;
       border: 1px solid #f3f4f6;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Квадратный контейнер для фото */
+    .product-image-container {
+      width: 100%;
+      aspect-ratio: 1 / 1; /* Квадрат 1:1 */
+      overflow: hidden;
+      background-color: #f3f4f6;
     }
 
     .product-image {
       width: 100%;
-      height: 8rem;
-      object-fit: cover;
-      background-color: #f3f4f6;
+      height: 100%;
+      object-fit: cover; /* Фото заполняет квадрат, обрезаясь по краям */
     }
   </style>
 </head>
@@ -121,15 +130,18 @@
         </button>
       </div>
 
-      <!-- 2. Каталог товаров -->
+      <!-- 2. Каталог товаров с квадратными фото -->
       <div v-else-if="currentView === 'catalog'" key="catalog" class="p-4 pb-6">
         <div class="grid grid-cols-1 gap-4">
           <div v-for="product in products"
                :key="product.id"
                class="product-card">
-            <img :src="product.image"
-                 :alt="product.name"
-                 class="product-image">
+            <!-- Квадратный контейнер для фото -->
+            <div class="product-image-container">
+              <img :src="product.image"
+                   :alt="product.name"
+                   class="product-image">
+            </div>
             <div class="p-4">
               <h3 class="font-bold text-lg text-gray-800">{{ product.name }}</h3>
               <p class="text-gray-500 text-sm mt-1">{{ product.description }}</p>
