@@ -142,7 +142,7 @@
     <main class="flex-1 overflow-y-auto bg-gray-50">
         <transition name="fade" mode="out-in">
             
-            <!-- Главное меню -->
+            <!-- 1. Главное меню -->
             <div v-if="currentView === 'home'" key="home" class="p-6 flex flex-col h-full justify-center gap-4">
                 <div class="text-center mb-4">
                     <h2 class="text-2xl font-bold text-gray-800 mb-2">Добро пожаловать!</h2>
@@ -170,7 +170,7 @@
                 </button>
             </div>
 
-            <!-- Каталог товаров -->
+            <!-- 2. Каталог товаров -->
             <div v-else-if="currentView === 'catalog'" key="catalog" class="pb-20">
                 <div class="grid grid-cols-1 gap-4 p-4">
                     <div v-for="product in products" :key="product.id" class="product-card">
@@ -199,6 +199,7 @@
                     </div>
                 </div>
                 
+                <!-- Плавающая корзина -->
                 <div v-if="cartCount > 0" class="fixed bottom-6 left-4 right-4 max-w-md mx-auto z-20">
                     <button @click="goToCart" class="w-full bg-gray-900 text-white py-4 rounded-xl shadow-lg flex items-center justify-between px-6">
                         <div class="flex items-center gap-3">
@@ -215,7 +216,258 @@
                 </div>
             </div>
 
-            <!-- Контакты / Доставка -->
+            <!-- 3. Корзина -->
+            <div v-else-if="currentView === 'cart'" key="cart" class="p-4 pb-32">
+                <div v-if="cart.length === 0" class="flex flex-col items-center justify-center h-64 text-gray-400">
+                    <span class="text-6xl mb-4">🛒</span>
+                    <p>Корзина пуста</p>
+                    <button @click="currentView = 'catalog'" class="mt-4 text-pink-500 font-semibold">Перейти в каталог</button>
+                </div>
+
+                <div v-else class="space-y-4">
+                    <div v-for="item in cartItems" :key="item.id" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex gap-4">
+                        <img :src="item.image" class="w-20 h-20 rounded-xl object-cover bg-gray-100 shrink-0">
+                        <div class="flex-1 flex flex-col justify-between">
+                            <div>
+                                <h3 class="font-bold text-gray-800">{{ item.name }}</h3>
+                                <div class="text-pink-600 font-bold">{{ item.totalPrice }} ₽</div>
+                            </div>
+                            <div class="flex items-center justify-between mt-2">
+                                <div class="flex items-center gap-3 bg-gray-50 rounded-lg p-1">
+                                    <button @click="updateQuantity(item.id, -getStep(item))" class="w-8 h-8 flex items-center justify-center bg-white rounded-md shadow-sm text-gray-600 hover:text-pink-600 disabled:opacity-50" :disabled="item.quantity <= getStep(item)">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" /></svg>
+                                    </button>
+                                    <span class="font-bold text-sm w-8 text-center">{{ item.quantity }} {{ item.unit }}</span>
+                                    <button @click="updateQuantity(item.id, getStep(item))" class="w-8 h-8 flex items-center justify-center bg-white rounded-md shadow-sm text-gray-600 hover:text-pink-600">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                                    </button>
+                                </div>
+                                <button @click="removeFromCart(item.id)" class="text-gray-400 hover:text-red-500 p-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Итого -->
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-gray-500">Итого товаров:</span>
+                            <span class="font-bold">{{ cartCount }} шт</span>
+                        </div>
+                        <div class="flex justify-between items-center text-lg">
+                            <span class="font-bold text-gray-800">Сумма заказа:</span>
+                            <span class="font-bold text-pink-600">{{ cartTotal }} ₽</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Действия с корзиной -->
+                <div v-if="cart.length > 0" class="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 max-w-md mx-auto">
+                    <div class="flex gap-3">
+                        <button @click="currentView = 'catalog'" class="flex-1 btn-secondary py-3 text-sm">
+                            🍰 Добавить еще
+                        </button>
+                        <button @click="goToCheckout" class="flex-[2] btn-primary">
+                            📦 Оформить заказ
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Оформление заказа -->
+            <div v-else-if="currentView === 'checkout'" key="checkout" class="p-4 pb-32">
+                <div class="space-y-4">
+                    <!-- Способ получения -->
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">🚚 Способ получения</label>
+                        <div class="flex gap-3">
+                            <button @click="order.pickup = false; order.address = ''" 
+                                    :class="['flex-1 py-2 px-3 rounded-xl text-sm font-medium transition-colors', !order.pickup ? 'bg-pink-500 text-white' : 'bg-gray-100 text-gray-700']">
+                                Доставка
+                            </button>
+                            <button @click="order.pickup = true; order.address = 'Московский пр-кт, 10 (самовывоз)'" 
+                                    :class="['flex-1 py-2 px-3 rounded-xl text-sm font-medium transition-colors', order.pickup ? 'bg-pink-500 text-white' : 'bg-gray-100 text-gray-700']">
+                                🚶 Самовывоз
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Адрес (только для доставки) -->
+                    <div v-if="!order.pickup" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">📍 Адрес доставки</label>
+                        <textarea v-model="order.address" @input="calculateDeliveryZone" rows="2" placeholder="Улица, дом, квартира" class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all resize-none"></textarea>
+                        
+                        <!-- Зона доставки -->
+                        <div v-if="deliveryZone && !order.pickup" class="mt-2 flex items-center justify-between">
+                            <span class="text-sm text-gray-600">Зона доставки:</span>
+                            <span :class="['zone-badge', 'zone-' + deliveryZone.zone]">
+                                Зона {{ deliveryZone.zone }} — {{ deliveryCost }} ₽
+                            </span>
+                        </div>
+                        <div v-if="deliveryZone && cartTotal >= deliveryZone.freeThreshold && !order.pickup" class="mt-1 text-xs text-green-600">
+                            ✨ Доставка бесплатно (от {{ deliveryZone.freeThreshold }} ₽)
+                        </div>
+                    </div>
+
+                    <!-- Самовывоз (информация) -->
+                    <div v-if="order.pickup" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">🏠</span>
+                            <div>
+                                <div class="text-xs text-gray-400">Адрес самовывоза</div>
+                                <div class="font-medium">Московский пр-кт, д. 10</div>
+                                <div class="text-xs text-gray-500 mt-1">Бесплатно</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Дата -->
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">📅 Дата получения</label>
+                        <select v-model="order.date" class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-500">
+                            <option value="" disabled>Выберите дату</option>
+                            <option v-for="date in availableDates" :value="date.value">{{ date.label }}</option>
+                        </select>
+                    </div>
+
+                    <!-- Время -->
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">⏰ Время получения</label>
+                        <select v-model="order.time" class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-500">
+                            <option value="" disabled>Выберите время</option>
+                            <option value="12:00-14:00">12:00 – 14:00</option>
+                            <option value="14:00-16:00">14:00 – 16:00</option>
+                            <option value="16:00-18:00">16:00 – 18:00</option>
+                            <option value="18:00-20:00">18:00 – 20:00</option>
+                        </select>
+                    </div>
+
+                    <!-- Телефон -->
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">📞 Ваш телефон</label>
+                        <input v-model="order.phone" type="tel" placeholder="+7 999 000-00-00" class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all">
+                    </div>
+
+                    <!-- Комментарий -->
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">💬 Комментарий</label>
+                        <input v-model="order.comment" type="text" placeholder="Позвонить за час..." class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all">
+                    </div>
+                </div>
+
+                <div class="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 max-w-md mx-auto">
+                    <button @click="goToConfirmation" :disabled="!isCheckoutValid" class="btn-primary" :class="{'opacity-50 cursor-not-allowed': !isCheckoutValid}">
+                        Далее: подтверждение
+                    </button>
+                </div>
+            </div>
+
+            <!-- 5. Подтверждение заказа -->
+            <div v-else-if="currentView === 'confirmation'" key="confirmation" class="p-4 pb-32">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="bg-gray-50 p-4 border-b border-gray-100">
+                        <h3 class="font-bold text-gray-800">Проверьте заказ</h3>
+                    </div>
+                    
+                    <div class="p-4 space-y-4">
+                        <!-- Состав заказа -->
+                        <div>
+                            <h4 class="text-xs font-bold text-gray-400 uppercase mb-2">Состав</h4>
+                            <div v-for="item in cartItems" :key="item.id" class="flex justify-between text-sm mb-1">
+                                <span>{{ item.name }}</span>
+                                <span class="font-medium">{{ item.quantity }} {{ item.unit }} • {{ item.totalPrice }} ₽</span>
+                            </div>
+                            <div class="border-t border-dashed border-gray-200 mt-2 pt-2 flex justify-between font-bold">
+                                <span>Товары:</span>
+                                <span>{{ cartTotal }} ₽</span>
+                            </div>
+                        </div>
+
+                        <!-- Доставка/самовывоз -->
+                        <div v-if="!order.pickup && deliveryZone" class="flex justify-between text-sm">
+                            <span>Доставка (зона {{ deliveryZone.zone }}):</span>
+                            <span :class="{'line-through text-gray-400': deliveryFree, 'font-bold': !deliveryFree}">
+                                {{ deliveryCost }} ₽
+                            </span>
+                        </div>
+                        <div v-if="order.pickup" class="flex justify-between text-sm">
+                            <span>Самовывоз:</span>
+                            <span class="text-green-600">Бесплатно</span>
+                        </div>
+                        <div v-if="deliveryFree && !order.pickup" class="text-xs text-green-600 text-right">
+                            ✨ Бесплатно (от {{ deliveryZone.freeThreshold }} ₽)
+                        </div>
+
+                        <!-- Итого -->
+                        <div class="border-t border-gray-200 pt-3 flex justify-between font-bold text-lg">
+                            <span>ИТОГО:</span>
+                            <span class="text-pink-600">{{ finalTotal }} ₽</span>
+                        </div>
+                        
+                        <!-- Информация о предоплате -->
+                        <div class="bg-pink-50 p-3 rounded-xl text-sm">
+                            <div class="font-medium text-pink-800 mb-1">💳 Предоплата 50%</div>
+                            <div class="flex justify-between">
+                                <span>Сейчас спишем:</span>
+                                <span class="font-bold">{{ Math.floor(finalTotal / 2) }} ₽</span>
+                            </div>
+                            <div class="flex justify-between text-gray-600">
+                                <span>При получении:</span>
+                                <span>{{ Math.ceil(finalTotal / 2) }} ₽</span>
+                            </div>
+                            <div class="text-xs text-gray-500 mt-2">
+                                * Остаток оплатите после получения фото готового заказа
+                            </div>
+                        </div>
+
+                        <!-- Детали -->
+                        <div class="space-y-2 text-sm">
+                            <div><span class="text-gray-500">📅</span> {{ order.date }} {{ order.time }}</div>
+                            <div v-if="!order.pickup"><span class="text-gray-500">📍</span> {{ order.address }}</div>
+                            <div v-else><span class="text-gray-500">📍</span> Самовывоз (Московский пр-кт, 10)</div>
+                            <div><span class="text-gray-500">📞</span> {{ order.phone }}</div>
+                            <div v-if="order.comment"><span class="text-gray-500">💬</span> {{ order.comment }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Кнопки действий -->
+                <div class="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 max-w-md mx-auto space-y-2">
+                    <button @click="processPayment" class="btn-primary bg-green-500 hover:bg-green-600">
+                        ✅ Оплатить 50% ({{ Math.floor(finalTotal / 2) }} ₽)
+                    </button>
+                    <button @click="currentView = 'checkout'" class="btn-secondary">
+                        ✏️ Редактировать
+                    </button>
+                    <button @click="contactManager" class="text-gray-400 text-sm w-full py-2">
+                        💬 Связаться с менеджером
+                    </button>
+                </div>
+            </div>
+
+            <!-- 6. Успешный заказ -->
+            <div v-else-if="currentView === 'success'" key="success" class="h-full flex flex-col items-center justify-center p-6 text-center">
+                <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">Заказ #{{ orderId }} принят!</h2>
+                <p class="text-gray-500 mb-4">50% предоплаты получено. Мы начинаем готовить ваш заказ.</p>
+                <p class="text-sm text-gray-400 mb-8">Фото готового заказа пришлём сюда. Остаток оплатите при получении.</p>
+                
+                <div class="space-y-3 w-full max-w-xs">
+                    <button @click="goHome" class="btn-primary">
+                        В главное меню
+                    </button>
+                    <button @click="contactManager" class="btn-secondary">
+                        💬 Связаться с менеджером
+                    </button>
+                </div>
+            </div>
+
+            <!-- 7. Контакты / Доставка -->
             <div v-else-if="currentView === 'contacts'" key="contacts" class="p-6">
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                     <h3 class="text-xl font-bold text-gray-800 mb-4">📞 Контакты</h3>
@@ -233,28 +485,33 @@
                             <span class="text-2xl">💬</span>
                             <div>
                                 <div class="text-xs text-gray-400">Telegram</div>
-                                <a href="https://t.me/bakary36_bot" class="text-lg font-semibold text-pink-600">@bakary36_bot</a>
+                                <a href="https://t.me/MypMir" class="text-lg font-semibold text-pink-600">@MypMir</a>
                             </div>
                         </div>
 
+                        <!-- Зоны доставки -->
                         <div class="mt-6">
                             <h4 class="font-bold text-gray-700 mb-3">🚚 Зоны доставки</h4>
                             <div class="space-y-2">
                                 <div class="flex items-center justify-between p-2 bg-green-50 rounded-lg">
-                                    <span class="text-sm">Пешая зона (до 20 мин)</span>
+                                    <span class="text-sm">Зона 1 (ближняя)</span>
                                     <span class="font-medium">200 ₽</span>
                                 </div>
                                 <div class="flex items-center justify-between p-2 bg-orange-50 rounded-lg">
-                                    <span class="text-sm">Транспортная зона (один автобус)</span>
+                                    <span class="text-sm">Зона 2 (средняя)</span>
                                     <span class="font-medium">350 ₽</span>
                                 </div>
                                 <div class="flex items-center justify-between p-2 bg-red-50 rounded-lg">
-                                    <span class="text-sm">Дальняя зона</span>
+                                    <span class="text-sm">Зона 3 (дальняя)</span>
                                     <span class="font-medium">от 500 ₽</span>
+                                </div>
+                                <div class="flex items-center justify-between p-2 bg-blue-50 rounded-lg">
+                                    <span class="text-sm">Самовывоз</span>
+                                    <span class="font-medium text-green-600">Бесплатно</span>
                                 </div>
                             </div>
                             <p class="text-xs text-gray-400 mt-3">
-                                * Бесплатно при заказе от 1500₽ (зона 1) и от 2000₽ (зона 2)
+                                * Бесплатная доставка в зоне 1 от 1500₽, в зоне 2 от 2000₽
                             </p>
                         </div>
                     </div>
@@ -264,8 +521,6 @@
                     </button>
                 </div>
             </div>
-
-            <!-- Остальные вьюхи будут добавлены в следующем сообщении из-за лимита длины -->
         </transition>
     </main>
 </div>
@@ -285,11 +540,16 @@
                 time: '',
                 address: '',
                 phone: '',
-                comment: ''
+                comment: '',
+                pickup: false
             });
             
             const deliveryZone = ref(null);
             const lastOrder = ref(null);
+
+            // Токен бота-уведомителя
+            const NOTIFY_BOT_TOKEN = '8643888186:AAFoQ9I2MfgDCcOiMBuboNN9wVEOtJDt4pU';
+            const MANAGER_CHAT_ID = '-5189187097';
 
             const products = ref([
                 { 
@@ -384,7 +644,7 @@
                 }
             ]);
 
-            // Header title
+            // Заголовки
             const headerTitle = computed(() => {
                 const titles = {
                     home: 'Главная',
@@ -398,7 +658,7 @@
                 return titles[currentView.value] || 'Bakary';
             });
 
-            // Cart items
+            // Корзина
             const cartItems = computed(() => {
                 return cart.value.map(item => {
                     const product = products.value.find(p => p.id === item.id);
@@ -425,8 +685,58 @@
                 }, 0);
             });
 
+            // Доставка
+            const deliveryCost = computed(() => {
+                if (order.value.pickup) return 0;
+                if (!deliveryZone.value) return 0;
+                return deliveryZone.value.cost;
+            });
+
+            const deliveryFree = computed(() => {
+                if (order.value.pickup) return true;
+                if (!deliveryZone.value) return false;
+                return cartTotal.value >= deliveryZone.value.freeThreshold;
+            });
+
+            const finalTotal = computed(() => {
+                return cartTotal.value + (deliveryFree.value ? 0 : deliveryCost.value);
+            });
+
+            // Доступные даты (с учётом 16:00)
+            const availableDates = computed(() => {
+                const dates = [];
+                const now = new Date();
+                const currentHour = now.getHours();
+                
+                // Сегодня доступно только если до 16:00
+                if (currentHour < 16) {
+                    dates.push({
+                        value: 'сегодня',
+                        label: 'Сегодня'
+                    });
+                }
+                
+                // Завтра
+                dates.push({
+                    value: 'завтра',
+                    label: 'Завтра'
+                });
+                
+                // Послезавтра
+                const afterTomorrow = new Date();
+                afterTomorrow.setDate(afterTomorrow.getDate() + 2);
+                dates.push({
+                    value: afterTomorrow.toLocaleDateString('ru-RU'),
+                    label: afterTomorrow.toLocaleDateString('ru-RU', { day: 'numeric', month: 'numeric' })
+                });
+                
+                return dates;
+            });
+
             const isCheckoutValid = computed(() => {
-                return order.value.address && order.value.phone && order.value.date && order.value.time;
+                if (!order.value.phone || !order.value.date || !order.value.time) return false;
+                if (!order.value.pickup && !order.value.address) return false;
+                return true;
             });
 
             const getStep = (item) => {
@@ -434,6 +744,7 @@
                 return product?.type === 'set4' ? 4 : 1;
             };
 
+            // Уведомления
             const showToast = (type, message) => {
                 toast.value.id = Date.now();
                 toast.value.type = type;
@@ -491,26 +802,30 @@
                     showToast('error', 'Нет прошлых заказов');
                     return;
                 }
-                // Здесь будет логика повторения заказа
+                // Здесь логика повторения заказа
             };
 
             const contactManager = () => {
-                window.open('https://t.me/bakary36_bot', '_blank');
+                window.open('https://t.me/MypMir', '_blank');
             };
 
-            const requestContact = () => {
-                showToast('info', 'Функция запроса контакта будет добавлена');
-            };
-
+            // Определение зоны доставки (упрощённая версия)
             const calculateDeliveryZone = () => {
-                // Здесь будет логика определения зоны по адресу
-                // Пока заглушка
-                deliveryZone.value = {
-                    zone: 2,
-                    name: 'Транспортная',
-                    cost: 350,
-                    freeThreshold: 2000
-                };
+                if (order.value.pickup) {
+                    deliveryZone.value = null;
+                    return;
+                }
+                
+                const address = order.value.address.toLowerCase();
+                
+                // Простая логика для демо
+                if (address.includes('московский') || address.includes('беговая') || address.includes('жукова')) {
+                    deliveryZone.value = { zone: 2, name: 'Зона 2', cost: 350, freeThreshold: 2000 };
+                } else if (address.includes('шилово') || address.includes('придонской') || address.includes('репное')) {
+                    deliveryZone.value = { zone: 3, name: 'Зона 3', cost: 500, freeThreshold: 999999 };
+                } else {
+                    deliveryZone.value = { zone: 1, name: 'Зона 1', cost: 200, freeThreshold: 1500 };
+                }
             };
 
             const goToCheckout = () => {
@@ -530,9 +845,51 @@
                 currentView.value = 'confirmation';
             };
 
+            // Отправка уведомления в группу
+            const sendOrderNotification = () => {
+                const itemsList = cartItems.value.map(item => 
+                    `• ${item.name}: ${item.quantity} ${item.unit} = ${item.totalPrice} ₽`
+                ).join('\n');
+                
+                const deliveryText = order.value.pickup 
+                    ? '🚶 Самовывоз (бесплатно)' 
+                    : `🚚 Доставка (зона ${deliveryZone.value.zone}): ${deliveryFree.value ? 'Бесплатно' : deliveryCost.value + ' ₽'}`;
+                
+                const message = `
+🍰 *НОВЫЙ ЗАКАЗ #${orderId.value}*
+
+${itemsList}
+
+*Итого:* ${cartTotal.value} ₽
+${deliveryText}
+*К оплате всего:* ${finalTotal.value} ₽
+
+💳 *Предоплата 50%:* ${Math.floor(finalTotal.value / 2)} ₽
+💰 *При получении:* ${Math.ceil(finalTotal.value / 2)} ₽
+
+📅 ${order.value.date} ${order.value.time}
+${order.value.pickup ? '📍 Самовывоз: Московский пр-кт, 10' : `📍 ${order.value.address}`}
+📞 ${order.value.phone}
+${order.value.comment ? `💬 ${order.value.comment}` : ''}
+                `;
+
+                fetch(`https://api.telegram.org/bot${NOTIFY_BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: MANAGER_CHAT_ID,
+                        text: message,
+                        parse_mode: 'Markdown'
+                    })
+                }).catch(err => console.error('Ошибка отправки уведомления:', err));
+            };
+
             const processPayment = () => {
                 showToast('success', 'Переход к оплате...');
+                
+                // Имитация оплаты
                 setTimeout(() => {
+                    sendOrderNotification(); // Отправляем уведомление в группу
                     currentView.value = 'success';
                     orderId.value++;
                     lastOrder.value = { ...cart.value, date: new Date() };
@@ -549,7 +906,11 @@
                 cartTotal,
                 order,
                 deliveryZone,
+                deliveryCost,
+                deliveryFree,
+                finalTotal,
                 lastOrder,
+                availableDates,
                 isCheckoutValid,
                 orderId,
                 toast,
@@ -563,7 +924,6 @@
                 goToConfirmation,
                 repeatLastOrder,
                 contactManager,
-                requestContact,
                 calculateDeliveryZone,
                 processPayment,
                 showToast
