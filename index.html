@@ -353,7 +353,10 @@
 
             const showToast = (type, msg) => { toast.value = { id: Date.now(), type, message: msg, show: true }; setTimeout(() => toast.value.show = false, 3000); };
             const goHome = () => currentView.value = 'home';
-            const goToCart = () => { if (!cart.value.length) { showToast('error', 'Корзина пуста'); return; } currentView.value = 'cart'; };
+            const goToCart = () => {
+  currentView.value = 'cart';
+};
+
             const addToCart = (product) => { const ex = cart.value.find(i => i.id === product.id); const step = product.type === 'set4' ? 4 : 1; if (ex) ex.quantity += step; else cart.value.push({ id: product.id, quantity: step }); showToast('success', `${product.name} добавлен`); };
             const updateQuantity = (id, delta) => { const i = cart.value.find(i => i.id === id); if (!i) return; const s = getStep(i); const nq = i.quantity + delta; if (nq >= s) i.quantity = nq; else removeFromCart(id); };
             const removeFromCart = (id) => { cart.value = cart.value.filter(i => i.id !== id); showToast('info', 'Товар удалён'); };
