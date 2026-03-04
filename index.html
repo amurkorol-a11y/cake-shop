@@ -203,10 +203,20 @@
               </div>
             </div>
           </div>
-          <div class="bg-white p-3 rounded-xl shadow-sm flex justify-between">
-            <span>Итого:</span>
-            <span class="font-bold text-pink-600">{{ cartTotal }} ₽</span>
-          </div>
+          <div class="bg-white p-3 rounded-xl shadow-sm">
+  <div class="flex justify-between text-sm text-gray-600">
+    <span>Товары:</span>
+    <span>{{ cartTotal }} ₽</span>
+  </div>
+  <div v-if="!order.pickup" class="flex justify-between text-sm text-gray-600 mt-1">
+    <span>Доставка:</span>
+    <span>{{ deliveryFree ? 'Бесплатно' : deliveryCost + ' ₽' }}</span>
+  </div>
+  <div class="flex justify-between font-bold text-pink-600 text-lg mt-2 pt-2 border-t">
+    <span>ИТОГО:</span>
+    <span>{{ finalTotal }} ₽</span>
+  </div>
+</div>
           <button @click="goToCheckout" class="btn-primary">
             Оформить заказ
           </button>
