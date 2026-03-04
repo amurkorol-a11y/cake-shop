@@ -86,7 +86,7 @@
         </div>
       </div>
 
-      <!-- Оформление заказа -->
+      <!-- Оформление -->
       <div v-else-if="currentView === 'checkout'" class="p-4 space-y-4">
         <h2 class="text-lg font-bold">Оформление заказа</h2>
 
@@ -161,10 +161,11 @@
           </span>
         </div>
 
-        <button @click="goToConfirmation" :disabled="!isCheckoutValid"
+        <button @click="processPayment"
+                :disabled="!isCheckoutValid"
                 class="btn-primary"
                 :class="!isCheckoutValid ? 'opacity-60 cursor-not-allowed' : ''">
-          Перейти к подтверждению
+          Оплатить 50% (демо, отправка менеджеру)
         </button>
       </div>
 
@@ -218,7 +219,6 @@
     createApp({
       setup() {
         const currentView = ref('home');
-        const orderId = ref(123);
         const toast = ref({ show: false, message: '', type: 'success', id: 0 });
 
         const cart = ref([]);
@@ -232,7 +232,6 @@
         });
 
         const deliveryZone = ref(null);
-        const lastOrder = ref(null);
 
         const BACKEND_URL = 'https://bakary-backend.vercel.app/api/order';
 
@@ -437,14 +436,63 @@
           }
         };
 
-        const goToConfirmation = () => {
+        const processPayment = () => {
           if (!isCheckoutValid.value) {
             showToast('error', 'Заполните все поля');
             return;
           }
+
           calculateDeliveryZone();
-          // пока просто показываем тост, позже можно добавить отдельный экран
-          showToast('success', 'Данные проверены, можно отправлять заказ');
+
+          const orderData = {
+            items: cartItems.value.map(i => ({
+              name: i.name,
+              quantity: i.quantity,
+              unit: i.unit,
+              price: i.price,
+              total: i.totalPrice
+            })),
+            cartTotal: cartTotal.value,
+            deliveryCost: deliveryFree.value ? 0 : deliveryCost.value,
+            finalTotal: finalTotal.value,
+            prepaid: Math.floor(finalTotal.value / 2),
+            customer: {
+              phone: order.value.phone,
+              comment: order.value.comment
+            },
+            delivery: order.value.pickup
+              ? {
+                  method: 'pickup',
+                  address: 'Московский пр-кт, 10'
+                }
+              : {
+                  method: 'delivery',
+                  address: order.value.address,
+                  zone: deliveryZone.value?.zone
+                },
+            datetime: {
+              date: order.value.date,
+              time: order.value.time
+            }
+          };
+
+          fetch(BACKEND_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(orderData)
+          })
+            .then(res => {
+              if (res.ok) {
+                showToast('success', 'Заказ отправлен менеджеру');
+                currentView.value = 'home';
+                cart.value = [];
+              } else {
+                showToast('error', 'Ошибка сервера');
+              }
+            })
+            .catch(() => {
+              showToast('error', 'Ошибка сети');
+            });
         };
 
         return {
@@ -467,9 +515,9 @@
           updateQuantity,
           removeFromCart,
           goToCheckout,
-          goToConfirmation,
           contactManager,
           calculateDeliveryZone,
+          processPayment,
           toast,
           getStep
         };
