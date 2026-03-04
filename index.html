@@ -73,9 +73,11 @@
             <h3 class="font-bold">{{ product.name }}</h3>
             <p class="text-sm text-gray-500">{{ product.description }}</p>
             <div class="flex justify-between items-center text-sm">
-              <span>{{ product.weight }}</span>
-              <span class="font-bold text-pink-600">{{ product.price }} ₽</span>
-            </div>
+  <span>{{ product.weight }}</span>
+  <span class="font-bold text-pink-600">
+    {{ product.type === 'set4' ? product.price * 4 + ' ₽' : product.price + ' ₽' }}
+  </span>
+</div>
             <button @click="addToCart(product)" class="btn-primary text-sm">
               Добавить в корзину
             </button>
