@@ -154,7 +154,8 @@
                 </button>
                 
                 <button @click="goToCart" class="btn-secondary">
-                    🛒 Корзина <span v-if="cartCount > 0" class="ml-auto bg-pink-100 text-pink-600 px-2 py-0.5 rounded-full text-xs">{{ cartCount }} шт.</span>
+                    🛒 Корзина
+                    <span v-if="cartCount > 0" class="ml-auto bg-pink-100 text-pink-600 px-2 py-0.5 rounded-full text-xs">{{ cartCount }} шт.</span>
                 </button>
                 
                 <button @click="repeatLastOrder" class="btn-secondary" :disabled="!lastOrder">
