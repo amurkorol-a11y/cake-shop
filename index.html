@@ -34,28 +34,97 @@
 <body class="antialiased text-gray-800 h-screen overflow-hidden flex flex-col">
   <div id="app" class="h-full flex flex-col max-w-md mx-auto bg-white shadow-2xl relative overflow-hidden">
 
-    <!-- здесь минимальный шаблон с кнопкой перехода в корзину -->
+    <!-- Toast -->
+    <transition name="toast">
+      <div v-if="toast.show"
+           class="absolute top-4 left-4 right-4 z-50 p-4 rounded-xl shadow-lg flex items-center gap-3"
+           :class="toast.type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'">
+        <span class="font-medium text-sm">{{ toast.message }}</span>
+      </div>
+    </transition>
+
+    <!-- Header -->
     <header class="bg-white px-4 py-3 border-b border-gray-100 flex items-center justify-between">
       <h1 class="text-xl font-bold text-pink-600">🍰 Bakary</h1>
       <button @click="goToCart" class="btn-secondary w-auto px-3 py-1">
         🛒 Корзина
-        <span v-if="cartCount > 0" class="ml-2 bg-pink-100 text-pink-600 px-2 py-0.5 rounded-full text-xs">
+        <span v-if="cartCount > 0"
+              class="ml-2 bg-pink-100 text-pink-600 px-2 py-0.5 rounded-full text-xs">
           {{ cartCount }} шт.
         </span>
       </button>
     </header>
 
     <main class="flex-1 overflow-y-auto bg-gray-50">
-      <div v-if="currentView === 'home'" class="p-4">
-        <p class="mb-4">Главная. Тестовый экран.</p>
+      <!-- Главная -->
+      <div v-if="currentView === 'home'" class="p-4 space-y-3">
+        <p class="text-lg font-bold">Главная. Тестовый экран.</p>
         <button @click="currentView = 'catalog'" class="btn-primary">Перейти в каталог</button>
+        <button @click="contactManager" class="btn-secondary">Связаться с менеджером</button>
       </div>
 
-      <div v-else-if="currentView === 'cart'" class="p-4">
-        <h2 class="text-lg font-bold mb-2">Корзина</h2>
-        <p v-if="cartCount === 0">Корзина пуста</p>
-        <div v-else>
-          <div v-for="item in cartItems" :key="item.id">{{ item.name }} — {{ item.quantity }}</div>
+      <!-- Каталог -->
+      <div v-else-if="currentView === 'catalog'" class="p-4 grid grid-cols-1 gap-4">
+        <div v-for="product in products" :key="product.id" class="product-card">
+          <div class="product-image-container">
+            <img :src="product.image" :alt="product.name" class="product-image" />
+          </div>
+          <div class="p-4 space-y-2">
+            <h3 class="font-bold">{{ product.name }}</h3>
+            <p class="text-sm text-gray-500">{{ product.description }}</p>
+            <div class="flex justify-between items-center text-sm">
+              <span>{{ product.weight }}</span>
+              <span class="font-bold text-pink-600">{{ product.price }} ₽</span>
+            </div>
+            <button @click="addToCart(product)" class="btn-primary text-sm">
+              Добавить в корзину
+            </button>
+            <a :href="product.flowwowLink" target="_blank" class="btn-flowwow text-sm">
+              Купить на Flowwow
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Корзина -->
+      <div v-else-if="currentView === 'cart'" class="p-4 space-y-4">
+        <h2 class="text-lg font-bold">Корзина</h2>
+        <div v-if="cartCount === 0" class="text-gray-500">
+          Корзина пуста
+        </div>
+        <div v-else class="space-y-3">
+          <div v-for="item in cartItems"
+               :key="item.id"
+               class="bg-white p-3 rounded-xl shadow-sm flex justify-between items-center">
+            <div>
+              <div class="font-medium">{{ item.name }}</div>
+              <div class="text-sm text-gray-500">{{ item.quantity }} {{ item.unit }}</div>
+            </div>
+            <div class="text-right">
+              <div class="font-bold text-pink-600">{{ item.totalPrice }} ₽</div>
+              <div class="flex gap-2 mt-1">
+                <button @click="updateQuantity(item.id, -getStep(item))"
+                        class="px-2 py-1 border rounded">
+                  -
+                </button>
+                <button @click="updateQuantity(item.id, getStep(item))"
+                        class="px-2 py-1 border rounded">
+                  +
+                </button>
+                <button @click="removeFromCart(item.id)"
+                        class="px-2 py-1 border rounded text-red-500">
+                  ×
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="bg-white p-3 rounded-xl shadow-sm flex justify-between">
+            <span>Итого:</span>
+            <span class="font-bold text-pink-600">{{ cartTotal }} ₽</span>
+          </div>
+          <button @click="goToCheckout" class="btn-primary">
+            Оформить заказ
+          </button>
         </div>
       </div>
     </main>
@@ -67,17 +136,206 @@
     createApp({
       setup() {
         const currentView = ref('home');
+        const orderId = ref(123);
+        const toast = ref({ show: false, message: '', type: 'success', id: 0 });
+
         const cart = ref([]);
-        const products = ref([]);
+        const order = ref({
+          date: '',
+          time: '',
+          address: '',
+          phone: '',
+          comment: '',
+          pickup: false
+        });
 
-        const cartItems = computed(() => cart.value);
-        const cartCount = computed(() => cart.value.reduce((s, i) => s + i.quantity, 0));
+        const deliveryZone = ref(null);
+        const lastOrder = ref(null);
 
-        const goToCart = () => {
-          currentView.value = 'cart';
+        const BACKEND_URL = 'https://bakary-backend.vercel.app/api/order';
+
+        const products = ref([
+          {
+            id: 1,
+            type: 'set4',
+            name: 'Павлова с черникой и лимонным курдом (4 шт)',
+            price: 325,
+            weight: '4 шт',
+            description: 'Воздушная меренга, сочная черника и лимонный курд',
+            flowwowLink: 'https://flowwow.com/product/pavlova-chernika',
+            image: 'https://sun9-46.userapi.com/s/v1/ig2/cK7yuBzfPq-caUeAANAHeb0Y6youpfTBYezQapz1kR-tVgcSaM3AGu_PmALhVwFp6_2ytROOAso-dlG-SQsJ9_l1.jpg?quality=95&as=32x43,48x64,72x96,108x144,160x213,240x320,360x480,480x640,540x720,640x853,720x960,960x1280&from=bu&cs=480x0'
+          },
+          {
+            id: 2,
+            type: 'weight',
+            name: 'Мадлен с персиком (350 г)',
+            price: 1000,
+            weight: '350 г',
+            description: 'Нежные бисквитные пирожные в белом шоколаде',
+            flowwowLink: 'https://flowwow.com/product/madlen-persik',
+            image: 'https://sun9-3.userapi.com/s/v1/ig2/UoLdQhQnfmx1CZe7vzes5KrkrTYYsMBnCcWEpvBXbJfPaTj_SE-MwU2XFdc2hxvzjxH_U7_7HDOlQzNfIhlQ41IJ.jpg?quality=95&as=32x32,48x48,72x72,108x108,160x160,240x240,360x360,480x480,540x540,640x640,720x720,1080x1080,1280x1280&from=bu&cs=480x0'
+          },
+          {
+            id: 3,
+            type: 'set4',
+            name: 'Муссовые киви/клубника (4 шт)',
+            price: 350,
+            weight: '4 шт',
+            description: 'Мусс с начинкой из свежих ягод',
+            flowwowLink: 'https://flowwow.com/product/muss-kiwi-klubnika',
+            image: 'https://sun9-42.userapi.com/s/v1/ig2/bvu5OkGnAV08ejApuyNQNAaR6WogyXHAyZbes4-8XKPwIhnwTbiD0n70bR1Twe63BQDtIiuApRwVJOl88Tz1HcNh.jpg?quality=95&as=32x49,48x74,72x111,108x167,160x247,240x371,360x556,480x741,540x834,640x988,720x1112,829x1280&from=bu&cs=480x0'
+          },
+          {
+            id: 4,
+            type: 'set4',
+            name: 'Муссовые апельсин (4 шт)',
+            price: 350,
+            weight: '4 шт',
+            description: 'Яркий мусс с апельсиновой начинкой',
+            flowwowLink: 'https://flowwow.com/product/muss-apelsin',
+            image: 'https://sun9-42.userapi.com/s/v1/ig2/bvu5OkGnAV08ejApuyNQNAaR6WogyXHAyZbes4-8XKPwIhnwTbiD0n70bR1Twe63BQDtIiuApRwVJOl88Tz1HcNh.jpg?quality=95&as=32x49,48x74,72x111,108x167,160x247,240x371,360x556,480x741,540x834,640x988,720x1112,829x1280&from=bu&cs=480x0'
+          },
+          {
+            id: 5,
+            type: 'weight',
+            name: 'Зефир натуральный «Клюква» (350 г)',
+            price: 850,
+            weight: '350 г',
+            description: 'Зефир с насыщенным вкусом свежей клюквы',
+            flowwowLink: 'https://flowwow.com/product/zefir-klukva',
+            image: 'https://sun9-46.userapi.com/s/v1/ig2/3UHJrY_j41ibzGK48S77AvKNTzyV8zbJaYZhkO7uqZAGZClKtmJv32BINjTP5H0FokU0fmFqLQoZg9ujdtip3mWd.jpg?quality=95&as=32x71,48x107,72x161,108x241,160x357,240x536,360x804,480x1072,540x1206,573x1280&from=bu&cs=480x0'
+          },
+          {
+            id: 6,
+            type: 'set4',
+            name: 'Павлова «Ягодный крем-чиз» (4 шт)',
+            price: 325,
+            weight: '4 шт',
+            description: 'Меренга, ягоды, воздушный крем-чиз',
+            flowwowLink: 'https://flowwow.com/product/pavlova-yagoda',
+            image: 'https://sun9-36.userapi.com/s/v1/ig2/KR06rCpX9GrYOREYfAYozf45hYd9q7IQOiKrNeiW7476S5ZQyPEnwoHREzpq7IKWWOAUoyPC-7etiQQC-tetorfk.jpg?quality=95&as=32x43,48x64,72x96,108x144,160x213,240x320,360x480,480x640,540x720,640x853,720x960,960x1280&from=bu&cs=480x0'
+          },
+          {
+            id: 7,
+            type: 'weight',
+            name: 'Меренговые «Клубника» (250 г)',
+            price: 1300,
+            weight: '250 г',
+            description: 'Хрустящая меренга с клубничным компоте',
+            flowwowLink: 'https://flowwow.com/product/merenga-klubnika',
+            image: 'https://sun9-15.userapi.com/s/v1/ig2/t4R6xo0xMufxBpxi_z-e1uXZlvhj5VRm4s4PBjjiRiGo0j_DHjhy0j-u-fLDJ2KWO6eOSb_idnkZdyb5EHYu8cN_.jpg?quality=95&as=32x32,48x48,72x72,108x108,160x160,240x240,360x360,480x480,540x540,640x640,720x720,1080x1080,1280x1280&from=bu&cs=480x0'
+          },
+          {
+            id: 8,
+            type: 'weight',
+            name: 'Зефир натуральный «Банан» (350 г)',
+            price: 850,
+            weight: '350 г',
+            description: 'Зефир со вкусом спелого банана',
+            flowwowLink: 'https://flowwow.com/product/zefir-banan',
+            image: 'https://sun9-66.userapi.com/s/v1/ig2/ThlU_SFO4YFhIdxeR65qMaUNSyugHm7jWXnD6JM5rIn6LAWhc2pbVq-NzkgrOcyp2mODnfUfJ4ss7x5VWMqCUVMs.jpg?quality=95&as=32x43,48x64,72x96,108x144,160x213,240x320,360x480,480x640,540x720,640x853,720x960,960x1280&from=bu&cs=480x0'
+          },
+          {
+            id: 9,
+            type: 'set4',
+            name: 'Муссовые «Клубничный шик» (4 шт)',
+            price: 375,
+            weight: '4 шт',
+            description: 'Мусс, клубничное компоте, миндаль',
+            flowwowLink: 'https://flowwow.com/product/muss-klubnika-shik',
+            image: 'https://sun9-58.userapi.com/s/v1/ig2/4tZCTMC9SX13U_Wuf4W-MNFfX-qxdhf3rGSMjRPYN98rPcbyP2DI-Ti4_FoAKhyYygq3n8xWpQdn4NX6GqUqXhjl.jpg?quality=95&as=32x43,48x64,72x96,108x144,160x213,240x320,360x480,480x640,540x720,640x853,720x960,960x1280&from=bu&cs=480x0'
+          }
+        ]);
+
+        const cartItems = computed(() => {
+          return cart.value.map(item => {
+            const product = products.value.find(p => p.id === item.id);
+            return {
+              ...item,
+              name: product.name,
+              price: product.price,
+              image: product.image,
+              type: product.type,
+              unit: product.type === 'set4' ? 'шт' : 'уп',
+              totalPrice: item.quantity * product.price
+            };
+          });
+        });
+
+        const cartCount = computed(() =>
+          cart.value.reduce((acc, item) => acc + item.quantity, 0)
+        );
+
+        const cartTotal = computed(() =>
+          cart.value.reduce((acc, item) => {
+            const product = products.value.find(p => p.id === item.id);
+            return acc + item.quantity * product.price;
+          }, 0)
+        );
+
+        const getStep = (item) => {
+          const product = products.value.find(p => p.id === item.id);
+          return product?.type === 'set4' ? 4 : 1;
         };
 
-        return { currentView, cart, cartItems, cartCount, goToCart };
+        const showToast = (type, message) => {
+          toast.value = { show: true, type, message, id: Date.now() };
+          setTimeout(() => { toast.value.show = false; }, 2000);
+        };
+
+        const goHome = () => { currentView.value = 'home'; };
+        const goToCart = () => { currentView.value = 'cart'; };
+
+        const addToCart = (product) => {
+          const existing = cart.value.find(i => i.id === product.id);
+          const step = product.type === 'set4' ? 4 : 1;
+          if (existing) existing.quantity += step;
+          else cart.value.push({ id: product.id, quantity: step });
+          showToast('success', 'Добавлено в корзину');
+        };
+
+        const updateQuantity = (id, delta) => {
+          const item = cart.value.find(i => i.id === id);
+          if (!item) return;
+          const step = getStep(item);
+          const next = item.quantity + delta;
+          if (next >= step) item.quantity = next;
+          else cart.value = cart.value.filter(i => i.id !== id);
+        };
+
+        const removeFromCart = (id) => {
+          cart.value = cart.value.filter(i => i.id !== id);
+          showToast('info', 'Товар удалён');
+        };
+
+        const goToCheckout = () => {
+          if (!cart.value.length) {
+            showToast('error', 'Корзина пуста');
+            return;
+          }
+          currentView.value = 'checkout';
+        };
+
+        const contactManager = () => {
+          window.open('https://t.me/MypMir', '_blank');
+        };
+
+        return {
+          currentView,
+          products,
+          cart,
+          cartItems,
+          cartCount,
+          cartTotal,
+          goHome,
+          goToCart,
+          addToCart,
+          updateQuantity,
+          removeFromCart,
+          goToCheckout,
+          contactManager,
+          toast
+        };
       }
     }).mount('#app');
   </script>
