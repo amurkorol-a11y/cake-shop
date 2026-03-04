@@ -86,6 +86,88 @@
         </div>
       </div>
 
+      <!-- Оформление заказа -->
+      <div v-else-if="currentView === 'checkout'" class="p-4 space-y-4">
+        <h2 class="text-lg font-bold">Оформление заказа</h2>
+
+        <div class="space-y-3 bg-white p-3 rounded-xl shadow-sm">
+          <label class="block text-sm font-medium mb-1">Телефон</label>
+          <input v-model="order.phone"
+                 type="tel"
+                 placeholder="+7 9.."
+                 class="w-full border rounded-lg px-3 py-2 text-sm" />
+
+          <label class="block text-sm font-medium mb-1">Дата</label>
+          <select v-model="order.date"
+                  class="w-full border rounded-lg px-3 py-2 text-sm">
+            <option disabled value="">Выберите дату</option>
+            <option v-for="d in availableDates" :key="d.value" :value="d.value">
+              {{ d.label }}
+            </option>
+          </select>
+
+          <label class="block text-sm font-medium mb-1">Время</label>
+          <input v-model="order.time"
+                 type="time"
+                 class="w-full border rounded-lg px-3 py-2 text-sm" />
+
+          <div class="flex gap-2 mt-2">
+            <button type="button"
+                    @click="order.pickup = true"
+                    class="flex-1 px-3 py-2 rounded-lg border text-sm"
+                    :class="order.pickup ? 'bg-pink-50 border-pink-400 text-pink-700' : 'bg-white'">
+              Самовывоз
+            </button>
+            <button type="button"
+                    @click="order.pickup = false"
+                    class="flex-1 px-3 py-2 rounded-lg border text-sm"
+                    :class="!order.pickup ? 'bg-pink-50 border-pink-400 text-pink-700' : 'bg-white'">
+              Доставка
+            </button>
+          </div>
+
+          <div v-if="!order.pickup" class="mt-2">
+            <label class="block text-sm font-medium mb-1">Адрес доставки</label>
+            <textarea v-model="order.address"
+                      @blur="calculateDeliveryZone"
+                      rows="2"
+                      placeholder="Улица, дом, подъезд, этаж, квартира"
+                      class="w-full border rounded-lg px-3 py-2 text-sm"></textarea>
+
+            <div v-if="deliveryZone" class="mt-1 text-xs text-gray-600">
+              <span class="zone-badge"
+                    :class="deliveryZone.zone === 1 ? 'zone-1' : deliveryZone.zone === 2 ? 'zone-2' : 'zone-3'">
+                Зона {{ deliveryZone.zone }}
+              </span>
+              <span class="ml-2">
+                Доставка {{ deliveryCost }} ₽
+                <span v-if="deliveryFree"> (бесплатно при этой сумме)</span>
+                <span v-else> (бесплатно от {{ deliveryZone.freeThreshold }} ₽)</span>
+              </span>
+            </div>
+          </div>
+
+          <label class="block text-sm font-medium mb-1 mt-2">Комментарий</label>
+          <textarea v-model="order.comment"
+                    rows="2"
+                    placeholder="Пожелания к заказу"
+                    class="w-full border rounded-lg px-3 py-2 text-sm"></textarea>
+        </div>
+
+        <div class="bg-white p-3 rounded-xl shadow-sm flex justify-between items-center">
+          <span class="text-sm text-gray-600">К оплате (50%):</span>
+          <span class="font-bold text-lg text-pink-600">
+            {{ Math.floor(finalTotal / 2) }} ₽
+          </span>
+        </div>
+
+        <button @click="goToConfirmation" :disabled="!isCheckoutValid"
+                class="btn-primary"
+                :class="!isCheckoutValid ? 'opacity-60 cursor-not-allowed' : ''">
+          Перейти к подтверждению
+        </button>
+      </div>
+
       <!-- Корзина -->
       <div v-else-if="currentView === 'cart'" class="p-4 space-y-4">
         <h2 class="text-lg font-bold">Корзина</h2>
@@ -155,92 +237,74 @@
         const BACKEND_URL = 'https://bakary-backend.vercel.app/api/order';
 
         const products = ref([
-          {
-            id: 1,
-            type: 'set4',
+          { 
+            id: 1, type: 'set4',
             name: 'Павлова с черникой и лимонным курдом (4 шт)',
-            price: 325,
-            weight: '4 шт',
+            price: 325, weight: '4 шт',
             description: 'Воздушная меренга, сочная черника и лимонный курд',
             flowwowLink: 'https://flowwow.com/product/pavlova-chernika',
             image: 'https://sun9-46.userapi.com/s/v1/ig2/cK7yuBzfPq-caUeAANAHeb0Y6youpfTBYezQapz1kR-tVgcSaM3AGu_PmALhVwFp6_2ytROOAso-dlG-SQsJ9_l1.jpg?quality=95&as=32x43,48x64,72x96,108x144,160x213,240x320,360x480,480x640,540x720,640x853,720x960,960x1280&from=bu&cs=480x0'
           },
-          {
-            id: 2,
-            type: 'weight',
+          { 
+            id: 2, type: 'weight',
             name: 'Мадлен с персиком (350 г)',
-            price: 1000,
-            weight: '350 г',
+            price: 1000, weight: '350 г',
             description: 'Нежные бисквитные пирожные в белом шоколаде',
             flowwowLink: 'https://flowwow.com/product/madlen-persik',
             image: 'https://sun9-3.userapi.com/s/v1/ig2/UoLdQhQnfmx1CZe7vzes5KrkrTYYsMBnCcWEpvBXbJfPaTj_SE-MwU2XFdc2hxvzjxH_U7_7HDOlQzNfIhlQ41IJ.jpg?quality=95&as=32x32,48x48,72x72,108x108,160x160,240x240,360x360,480x480,540x540,640x640,720x720,1080x1080,1280x1280&from=bu&cs=480x0'
           },
-          {
-            id: 3,
-            type: 'set4',
+          { 
+            id: 3, type: 'set4',
             name: 'Муссовые киви/клубника (4 шт)',
-            price: 350,
-            weight: '4 шт',
+            price: 350, weight: '4 шт',
             description: 'Мусс с начинкой из свежих ягод',
             flowwowLink: 'https://flowwow.com/product/muss-kiwi-klubnika',
             image: 'https://sun9-42.userapi.com/s/v1/ig2/bvu5OkGnAV08ejApuyNQNAaR6WogyXHAyZbes4-8XKPwIhnwTbiD0n70bR1Twe63BQDtIiuApRwVJOl88Tz1HcNh.jpg?quality=95&as=32x49,48x74,72x111,108x167,160x247,240x371,360x556,480x741,540x834,640x988,720x1112,829x1280&from=bu&cs=480x0'
           },
-          {
-            id: 4,
-            type: 'set4',
+          { 
+            id: 4, type: 'set4',
             name: 'Муссовые апельсин (4 шт)',
-            price: 350,
-            weight: '4 шт',
+            price: 350, weight: '4 шт',
             description: 'Яркий мусс с апельсиновой начинкой',
             flowwowLink: 'https://flowwow.com/product/muss-apelsin',
             image: 'https://sun9-42.userapi.com/s/v1/ig2/bvu5OkGnAV08ejApuyNQNAaR6WogyXHAyZbes4-8XKPwIhnwTbiD0n70bR1Twe63BQDtIiuApRwVJOl88Tz1HcNh.jpg?quality=95&as=32x49,48x74,72x111,108x167,160x247,240x371,360x556,480x741,540x834,640x988,720x1112,829x1280&from=bu&cs=480x0'
           },
-          {
-            id: 5,
-            type: 'weight',
+          { 
+            id: 5, type: 'weight',
             name: 'Зефир натуральный «Клюква» (350 г)',
-            price: 850,
-            weight: '350 г',
+            price: 850, weight: '350 г',
             description: 'Зефир с насыщенным вкусом свежей клюквы',
             flowwowLink: 'https://flowwow.com/product/zefir-klukva',
             image: 'https://sun9-46.userapi.com/s/v1/ig2/3UHJrY_j41ibzGK48S77AvKNTzyV8zbJaYZhkO7uqZAGZClKtmJv32BINjTP5H0FokU0fmFqLQoZg9ujdtip3mWd.jpg?quality=95&as=32x71,48x107,72x161,108x241,160x357,240x536,360x804,480x1072,540x1206,573x1280&from=bu&cs=480x0'
           },
-          {
-            id: 6,
-            type: 'set4',
+          { 
+            id: 6, type: 'set4',
             name: 'Павлова «Ягодный крем-чиз» (4 шт)',
-            price: 325,
-            weight: '4 шт',
+            price: 325, weight: '4 шт',
             description: 'Меренга, ягоды, воздушный крем-чиз',
             flowwowLink: 'https://flowwow.com/product/pavlova-yagoda',
             image: 'https://sun9-36.userapi.com/s/v1/ig2/KR06rCpX9GrYOREYfAYozf45hYd9q7IQOiKrNeiW7476S5ZQyPEnwoHREzpq7IKWWOAUoyPC-7etiQQC-tetorfk.jpg?quality=95&as=32x43,48x64,72x96,108x144,160x213,240x320,360x480,480x640,540x720,640x853,720x960,960x1280&from=bu&cs=480x0'
           },
-          {
-            id: 7,
-            type: 'weight',
+          { 
+            id: 7, type: 'weight',
             name: 'Меренговые «Клубника» (250 г)',
-            price: 1300,
-            weight: '250 г',
+            price: 1300, weight: '250 г',
             description: 'Хрустящая меренга с клубничным компоте',
             flowwowLink: 'https://flowwow.com/product/merenga-klubnika',
             image: 'https://sun9-15.userapi.com/s/v1/ig2/t4R6xo0xMufxBpxi_z-e1uXZlvhj5VRm4s4PBjjiRiGo0j_DHjhy0j-u-fLDJ2KWO6eOSb_idnkZdyb5EHYu8cN_.jpg?quality=95&as=32x32,48x48,72x72,108x108,160x160,240x240,360x360,480x480,540x540,640x640,720x720,1080x1080,1280x1280&from=bu&cs=480x0'
           },
-          {
-            id: 8,
-            type: 'weight',
+          { 
+            id: 8, type: 'weight',
             name: 'Зефир натуральный «Банан» (350 г)',
-            price: 850,
-            weight: '350 г',
+            price: 850, weight: '350 г',
             description: 'Зефир со вкусом спелого банана',
             flowwowLink: 'https://flowwow.com/product/zefir-banan',
             image: 'https://sun9-66.userapi.com/s/v1/ig2/ThlU_SFO4YFhIdxeR65qMaUNSyugHm7jWXnD6JM5rIn6LAWhc2pbVq-NzkgrOcyp2mODnfUfJ4ss7x5VWMqCUVMs.jpg?quality=95&as=32x43,48x64,72x96,108x144,160x213,240x320,360x480,480x640,540x720,640x853,720x960,960x1280&from=bu&cs=480x0'
           },
-          {
-            id: 9,
-            type: 'set4',
+          { 
+            id: 9, type: 'set4',
             name: 'Муссовые «Клубничный шик» (4 шт)',
-            price: 375,
-            weight: '4 шт',
+            price: 375, weight: '4 шт',
             description: 'Мусс, клубничное компоте, миндаль',
             flowwowLink: 'https://flowwow.com/product/muss-klubnika-shik',
             image: 'https://sun9-58.userapi.com/s/v1/ig2/4tZCTMC9SX13U_Wuf4W-MNFfX-qxdhf3rGSMjRPYN98rPcbyP2DI-Ti4_FoAKhyYygq3n8xWpQdn4NX6GqUqXhjl.jpg?quality=95&as=32x43,48x64,72x96,108x144,160x213,240x320,360x480,480x640,540x720,640x853,720x960,960x1280&from=bu&cs=480x0'
@@ -277,6 +341,44 @@
           const product = products.value.find(p => p.id === item.id);
           return product?.type === 'set4' ? 4 : 1;
         };
+
+        const deliveryCost = computed(() => {
+          if (order.value.pickup) return 0;
+          return deliveryZone.value?.cost || 0;
+        });
+
+        const deliveryFree = computed(() => {
+          if (order.value.pickup) return true;
+          if (!deliveryZone.value) return false;
+          return cartTotal.value >= deliveryZone.value.freeThreshold;
+        });
+
+        const finalTotal = computed(() => {
+          return cartTotal.value + (deliveryFree.value ? 0 : deliveryCost.value);
+        });
+
+        const availableDates = computed(() => {
+          const dates = [];
+          const now = new Date();
+          const currentHour = now.getHours();
+          if (currentHour < 16) {
+            dates.push({ value: 'сегодня', label: 'Сегодня' });
+          }
+          dates.push({ value: 'завтра', label: 'Завтра' });
+          const afterTomorrow = new Date();
+          afterTomorrow.setDate(afterTomorrow.getDate() + 2);
+          dates.push({
+            value: afterTomorrow.toLocaleDateString('ru-RU'),
+            label: afterTomorrow.toLocaleDateString('ru-RU', { day: 'numeric', month: 'numeric' })
+          });
+          return dates;
+        });
+
+        const isCheckoutValid = computed(() => {
+          if (!order.value.phone || !order.value.date || !order.value.time) return false;
+          if (!order.value.pickup && !order.value.address) return false;
+          return true;
+        });
 
         const showToast = (type, message) => {
           toast.value = { show: true, type, message, id: Date.now() };
@@ -320,6 +422,31 @@
           window.open('https://t.me/MypMir', '_blank');
         };
 
+        const calculateDeliveryZone = () => {
+          if (order.value.pickup) {
+            deliveryZone.value = null;
+            return;
+          }
+          const addr = (order.value.address || '').toLowerCase();
+          if (addr.includes('шилово') || addr.includes('придонской') || addr.includes('репное')) {
+            deliveryZone.value = { zone: 3, cost: 500, freeThreshold: 999999 };
+          } else if (addr.includes('московский') || addr.includes('беговая') || addr.includes('жукова')) {
+            deliveryZone.value = { zone: 2, cost: 350, freeThreshold: 2000 };
+          } else {
+            deliveryZone.value = { zone: 1, cost: 200, freeThreshold: 1500 };
+          }
+        };
+
+        const goToConfirmation = () => {
+          if (!isCheckoutValid.value) {
+            showToast('error', 'Заполните все поля');
+            return;
+          }
+          calculateDeliveryZone();
+          // пока просто показываем тост, позже можно добавить отдельный экран
+          showToast('success', 'Данные проверены, можно отправлять заказ');
+        };
+
         return {
           currentView,
           products,
@@ -327,14 +454,24 @@
           cartItems,
           cartCount,
           cartTotal,
+          order,
+          deliveryZone,
+          deliveryCost,
+          deliveryFree,
+          finalTotal,
+          availableDates,
+          isCheckoutValid,
           goHome,
           goToCart,
           addToCart,
           updateQuantity,
           removeFromCart,
           goToCheckout,
+          goToConfirmation,
           contactManager,
-          toast
+          calculateDeliveryZone,
+          toast,
+          getStep
         };
       }
     }).mount('#app');
