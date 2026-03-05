@@ -109,9 +109,14 @@
           </select>
 
           <label class="block text-sm font-medium mb-1">Время</label>
-          <input v-model="order.time"
-                 type="time"
-                 class="w-full border rounded-lg px-3 py-2 text-sm" />
+          <select v-model="order.time"
+        class="w-full border rounded-lg px-3 py-2 text-sm">
+  <option disabled value="">Выберите время доставки</option>
+  <option value="12:00-14:00">12:00 – 14:00</option>
+  <option value="14:00-16:00">14:00 – 16:00</option>
+  <option value="16:00-18:00">16:00 – 18:00</option>
+  <option value="18:00-20:00">18:00 – 20:00</option>
+</select>
 
           <div class="flex gap-2 mt-2">
             <button type="button"
