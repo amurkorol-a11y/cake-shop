@@ -269,11 +269,11 @@
   </div>
 
   <script src="./products.js"></script>
-  <script>
+   <script>
     const { createApp, ref, computed } = Vue;
 
-   createApp({
-  setup() {
+    createApp({
+      setup() {
         const tg = window.Telegram?.WebApp;
         const tgUser = tg?.initDataUnsafe?.user || null;
 
@@ -361,6 +361,7 @@
 
         const isCheckoutValid = computed(() => {
           const digits = (order.value.phone || '').replace(/\D/g, '');
+
           if (digits.length < 10) return false;
           if (!order.value.date || !order.value.time) return false;
           if (!order.value.pickup && !order.value.address) return false;
