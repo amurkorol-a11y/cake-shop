@@ -272,9 +272,13 @@
   <script>
     const { createApp, ref, computed } = Vue;
 
-    createApp({
-      setup() {
+   createApp({
+  setup() {
+        const tg = window.Telegram?.WebApp;
+        const tgUser = tg?.initDataUnsafe?.user || null;
+
         const currentView = ref('home');
+
         const toast = ref({ show: false, message: '', type: 'success', id: 0 });
 
         const cart = ref([]);
@@ -443,9 +447,14 @@
             finalTotal: finalTotal.value,
             prepaid: Math.floor(finalTotal.value / 2),
             customer: {
-              phone: order.value.phone,
-              comment: order.value.comment
-            },
+  phone: order.value.phone,
+  comment: order.value.comment,
+  telegramId: tgUser?.id || null,
+  username: tgUser?.username || null,
+  firstName: tgUser?.first_name || null,
+  lastName: tgUser?.last_name || null
+},
+
             delivery: order.value.pickup
               ? {
                   method: 'pickup',
