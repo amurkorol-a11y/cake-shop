@@ -122,7 +122,7 @@
           <label class="block text-sm font-medium mb-1">Телефон</label>
           <input v-model="order.phone"
                  type="tel"
-                 placeholder="+7 9.."
+                 placeholder="+7 999 123-45-67"
                  class="w-full border rounded-lg px-3 py-2 text-sm" />
 
           <label class="block text-sm font-medium mb-1">Дата</label>
@@ -356,7 +356,9 @@
         });
 
         const isCheckoutValid = computed(() => {
-          if (!order.value.phone || !order.value.date || !order.value.time) return false;
+          const digits = (order.value.phone || '').replace(/\D/g, '');
+          if (digits.length < 10) return false;
+          if (!order.value.date || !order.value.time) return false;
           if (!order.value.pickup && !order.value.address) return false;
           return true;
         });
@@ -464,7 +466,14 @@
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(orderData)
-          }).catch(err => console.warn('Ошибка отправки менеджеру:', err));
+          })
+            .then(() => {
+              showToast('success', 'Заказ отправлен менеджеру');
+            })
+            .catch(err => {
+              console.warn('Ошибка отправки менеджеру:', err);
+              showToast('error', 'Не удалось отправить заказ менеджеру');
+            });
 
           fetch(BACKEND_URL + '/create-payment', {
             method: 'POST',
