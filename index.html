@@ -267,8 +267,8 @@
       </div>
     </main>
   </div>
-<script src="./products.js"></script>
 
+  <script src="./products.js"></script>
   <script>
     const { createApp, ref, computed } = Vue;
 
@@ -288,10 +288,10 @@
         });
 
         const deliveryZone = ref(null);
+        const products = ref(window.BAKARY_PRODUCTS || []);
 
-        // БАЗОВЫЙ URL бэкенда
         const BACKEND_URL = 'https://bakary-backend.vercel.app/api';
-      
+
         const cartItems = computed(() => {
           return cart.value.map(item => {
             const product = products.value.find(p => p.id === item.id);
@@ -460,14 +460,12 @@
             }
           };
 
-          // 1. Отправляем заказ менеджеру (не блокируем оплату)
           fetch(BACKEND_URL + '/order', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(orderData)
           }).catch(err => console.warn('Ошибка отправки менеджеру:', err));
 
-          // 2. Создаём платёж в ЮKassa
           fetch(BACKEND_URL + '/create-payment', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
