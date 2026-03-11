@@ -276,6 +276,8 @@
       setup() {
         const tg = window.Telegram?.WebApp;
         const tgUser = tg?.initDataUnsafe?.user || null;
+        console.log('TG USER CHECK:', tgUser);
+
 console.log('TG USER:', tgUser);
 
         const currentView = ref('home');
