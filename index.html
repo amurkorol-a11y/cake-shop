@@ -82,9 +82,15 @@
             <button @click="addToCart(product)" class="btn-primary text-sm">
               Добавить в корзину
             </button>
-            <a :href="product.flowwowLink" target="_blank" class="btn-flowwow text-sm">
-              Купить на Flowwow
-            </a>
+            <a
+  :href="product.flowwowLink"
+  target="_blank"
+  rel="noopener noreferrer"
+  class="btn-flowwow text-sm"
+>
+  Купить на Flowwow
+</a>
+
           </div>
         </div>
       </div>
