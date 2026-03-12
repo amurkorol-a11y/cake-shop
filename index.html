@@ -55,6 +55,7 @@
       </button>
     </header>
 
+    <!-- Main Content -->
     <main class="flex-1 overflow-y-auto bg-gray-50">
 
       <!-- Главная -->
@@ -100,66 +101,43 @@
       </div>
 
       <!-- Каталог -->
-      <!-- Каталог -->
-<div v-else-if="currentView === 'catalog'" class="p-4 space-y-3">
-  <div class="flex items-center justify-between">
-    <button
-      @click="currentView = 'home'"
-      class="btn-secondary w-auto px-3 py-1 text-sm"
-    >
-      ← На главную
-    </button>
-    <h2 class="text-lg font-bold text-pink-600">Каталог десертов</h2>
-  </div>
-
-  <div class="grid grid-cols-1 gap-4">
-    <div v-for="product in products" :key="product.id" class="product-card">
-      <div class="product-image-container">
-        <img :src="product.image" :alt="product.name" class="product-image" />
-      </div>
-      <div class="p-4 space-y-2">
-        <h3 class="font-bold">{{ product.name }}</h3>
-        <p class="text-sm text-gray-500">{{ product.description }}</p>
-        <div class="flex justify-between items-center text-sm">
-          <span>{{ product.weight }}</span>
-          <span class="font-bold text-pink-600">
-            {{ product.type === 'set4' ? product.price * 4 : product.price }} ₽
-          </span>
+      <div v-else-if="currentView === 'catalog'" class="p-4 space-y-3">
+        <div class="flex items-center justify-between">
+          <button
+            @click="currentView = 'home'"
+            class="btn-secondary w-auto px-3 py-1 text-sm"
+          >
+            ← На главную
+          </button>
+          <h2 class="text-lg font-bold text-pink-600">Каталог десертов</h2>
         </div>
-        <button @click="addToCart(product)" class="btn-primary text-sm">
-          Добавить в корзину
-        </button>
-        <a
-          :href="product.flowwowLink"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="btn-flowwow text-sm"
-        >
-          Купить на Flowwow
-        </a>
-      </div>
-    </div>
-  </div>
-</div>
 
-          <div class="product-image-container">
-            <img :src="product.image" :alt="product.name" class="product-image" />
-          </div>
-          <div class="p-4 space-y-2">
-            <h3 class="font-bold">{{ product.name }}</h3>
-            <p class="text-sm text-gray-500">{{ product.description }}</p>
-            <div class="flex justify-between items-center text-sm">
-              <span>{{ product.weight }}</span>
-              <span class="font-bold text-pink-600">
-                {{ product.type === 'set4' ? product.price * 4 : product.price }} ₽
-              </span>
+        <div class="grid grid-cols-1 gap-4">
+          <div v-for="product in products" :key="product.id" class="product-card">
+            <div class="product-image-container">
+              <img :src="product.image" :alt="product.name" class="product-image" />
             </div>
-            <button @click="addToCart(product)" class="btn-primary text-sm">
-              Добавить в корзину
-            </button>
-            <a :href="product.flowwowLink" target="_blank" rel="noopener noreferrer" class="btn-flowwow text-sm">
-              Купить на Flowwow
-            </a>
+            <div class="p-4 space-y-2">
+              <h3 class="font-bold">{{ product.name }}</h3>
+              <p class="text-sm text-gray-500">{{ product.description }}</p>
+              <div class="flex justify-between items-center text-sm">
+                <span>{{ product.weight }}</span>
+                <span class="font-bold text-pink-600">
+                  {{ product.type === 'set4' ? product.price * 4 : product.price }} ₽
+                </span>
+              </div>
+              <button @click="addToCart(product)" class="btn-primary text-sm">
+                Добавить в корзину
+              </button>
+              <a
+                :href="product.flowwowLink"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn-flowwow text-sm"
+              >
+                Купить на Flowwow
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -273,7 +251,7 @@
                 :disabled="!isCheckoutValid"
                 class="btn-primary"
                 :class="!isCheckoutValid ? 'opacity-60 cursor-not-allowed' : ''">
-          Оплатить 50% (демо, отправка менеджеру)
+          Оплатить 50%
         </button>
       </div>
 
