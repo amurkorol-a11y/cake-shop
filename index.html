@@ -89,16 +89,37 @@
       </div>
 
       <!-- О нас -->
-      <div v-else-if="currentView === 'about'" class="p-4 space-y-3">
-        <h2 class="text-lg font-bold">О нас</h2>
-        <p class="text-sm text-gray-700">
-          Bakary — небольшая мастерская десертов в Воронеже. Готовим свежие пирожные,
-          зефир и наборы к чаю. Самовывоз с Московского проспекта и доставка по городу.
-        </p>
-        <button @click="currentView = 'home'" class="btn-secondary">
-          ← На главную
-        </button>
-      </div>
+<div v-else-if="currentView === 'about'" class="p-4 space-y-3">
+  <h2 class="text-lg font-bold">О нас</h2>
+  <p class="text-sm text-gray-700">
+    Bakary — небольшая мастерская десертов в Воронеже. Готовим свежие пирожные,
+    зефир и наборы к чаю. Самовывоз с Московского проспекта, 10 и доставка по городу.
+  </p>
+
+  <h3 class="text-md font-semibold mt-3">Доставка и самовывоз</h3>
+  <p class="text-sm text-gray-700">
+    Самовывоз: Московский пр-кт, д. 10 (бесплатно).<br>
+    Доставка по Воронежу — стоимость автоматически рассчитывается в корзине (зоны 1, 2, 3).<br>
+    Для отдалённых районов окончательная стоимость может быть уточнена менеджером.
+  </p>
+
+  <h3 class="text-md font-semibold mt-3">Реквизиты и контакты</h3>
+  <p class="text-sm text-gray-700">
+    Самозанятый: Король И.В.<br>
+    ИНН 280119993747<br>
+    Телефон: <a href="tel:+79937282535" class="text-pink-600">+7 993 728 2535</a><br>
+    Telegram: <a href="https://t.me/MypMir" class="text-pink-600">@MypMir</a>
+  </p>
+
+  <h3 class="text-md font-semibold mt-3">Возврат</h3>
+  <p class="text-sm text-gray-700">
+    Качественные продукты питания обмену и возврату не подлежат. Если вы заметили проблему с заказом, пожалуйста, свяжитесь с нами — мы постараемся решить ситуацию.
+  </p>
+
+  <button @click="currentView = 'home'" class="btn-secondary mt-4">
+    ← На главную
+  </button>
+</div>
 
       <!-- Каталог -->
       <div v-else-if="currentView === 'catalog'" class="p-4 space-y-3">
