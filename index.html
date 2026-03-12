@@ -59,6 +59,18 @@
 
       <!-- Главная -->
 <div v-if="currentView === 'home'" class="p-4 space-y-3">
+  <!-- О нас -->
+<div v-else-if="currentView === 'about'" class="p-4 space-y-3">
+  <h2 class="text-lg font-bold">О нас</h2>
+  <p class="text-sm text-gray-700">
+    Bakary — небольшая мастерская десертов в Воронеже. Готовим свежие пирожные,
+    зефир и наборы к чаю. Самовывоз с Московского проспекта и доставка по городу.
+  </p>
+  <button @click="currentView = 'home'" class="btn-secondary">
+    ← На главную
+  </button>
+</div>
+
   <p class="text-lg font-bold text-center">🍰 Нежные десерты Bakary 🍰</p>
   <p class="text-sm text-gray-600 text-center">
     Закажите пирожные и зефир с самовывозом или доставкой по Воронежу.
