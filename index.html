@@ -89,37 +89,37 @@
       </div>
 
       <!-- О нас -->
-<div v-else-if="currentView === 'about'" class="p-4 space-y-3">
-  <h2 class="text-lg font-bold">О нас</h2>
-  <p class="text-sm text-gray-700">
-    Bakary — небольшая мастерская десертов в Воронеже. Готовим свежие пирожные,
-    зефир и наборы к чаю. Самовывоз с Московского проспекта, 10 и доставка по городу.
-  </p>
+      <div v-else-if="currentView === 'about'" class="p-4 space-y-3">
+        <h2 class="text-lg font-bold">О нас</h2>
+        <p class="text-sm text-gray-700">
+          Bakary — небольшая мастерская десертов в Воронеже. Готовим свежие пирожные,
+          зефир и наборы к чаю. Самовывоз с Московского проспекта, 10 и доставка по городу.
+        </p>
 
-  <h3 class="text-md font-semibold mt-3">Доставка и самовывоз</h3>
-  <p class="text-sm text-gray-700">
-    Самовывоз: Московский пр-кт, д. 10 (бесплатно).<br>
-    Доставка по Воронежу — стоимость автоматически рассчитывается в корзине (зоны 1, 2, 3).<br>
-    Для отдалённых районов окончательная стоимость может быть уточнена менеджером.
-  </p>
+        <h3 class="text-md font-semibold mt-3">Доставка и самовывоз</h3>
+        <p class="text-sm text-gray-700">
+          Самовывоз: Московский пр-кт, д. 10 (бесплатно).<br>
+          Доставка по Воронежу — стоимость автоматически рассчитывается в корзине (зоны 1, 2, 3).<br>
+          Для отдалённых районов окончательная стоимость может быть уточнена менеджером.
+        </p>
 
-  <h3 class="text-md font-semibold mt-3">Реквизиты и контакты</h3>
-  <p class="text-sm text-gray-700">
-    Самозанятый: Король И.В.<br>
-    ИНН 280119993747<br>
-    Телефон: <a href="tel:+79937282535" class="text-pink-600">+7 993 728 2535</a><br>
-    Telegram: <a href="https://t.me/MypMir" class="text-pink-600">@MypMir</a>
-  </p>
+        <h3 class="text-md font-semibold mt-3">Реквизиты и контакты</h3>
+        <p class="text-sm text-gray-700">
+          Самозанятый: Король И.В.<br>
+          ИНН 280119993747<br>
+          Телефон: <a href="tel:+79937282535" class="text-pink-600">+7 993 728 2535</a><br>
+          Telegram: <a href="https://t.me/MypMir" class="text-pink-600">@MypMir</a>
+        </p>
 
-  <h3 class="text-md font-semibold mt-3">Возврат</h3>
-  <p class="text-sm text-gray-700">
-    Качественные продукты питания обмену и возврату не подлежат. Если вы заметили проблему с заказом, пожалуйста, свяжитесь с нами — мы постараемся решить ситуацию.
-  </p>
+        <h3 class="text-md font-semibold mt-3">Возврат</h3>
+        <p class="text-sm text-gray-700">
+          Качественные продукты питания обмену и возврату не подлежат. Если вы заметили проблему с заказом, пожалуйста, свяжитесь с нами — мы постараемся решить ситуацию.
+        </p>
 
-  <button @click="currentView = 'home'" class="btn-secondary mt-4">
-    ← На главную
-  </button>
-</div>
+        <button @click="currentView = 'home'" class="btn-secondary mt-4">
+          ← На главную
+        </button>
+      </div>
 
       <!-- Каталог -->
       <div v-else-if="currentView === 'catalog'" class="p-4 space-y-3">
@@ -193,11 +193,17 @@
 
         <!-- Форма -->
         <div class="space-y-3 bg-white p-3 rounded-xl shadow-sm">
-          <label class="block text-sm font-medium mb-1">Телефон</label>
-          <input v-model="order.phone"
-                 type="tel"
-                 placeholder="+7 999 123-45-67"
-                 class="w-full border rounded-lg px-3 py-2 text-sm" />
+          <!-- Телефон (обновлён) -->
+          <label class="block text-sm font-medium mb-1">Телефон для связи</label>
+          <input
+            v-model="order.phone"
+            type="tel"
+            placeholder="Например, +7 999 123-45-67"
+            class="w-full border rounded-lg px-3 py-2 text-sm"
+          />
+          <p class="text-xs text-gray-500 mt-1">
+            Укажите рабочий номер — менеджер свяжется с вами при необходимости.
+          </p>
 
           <label class="block text-sm font-medium mb-1">Дата</label>
           <select v-model="order.date"
@@ -358,11 +364,12 @@
         const toast = ref({ show: false, message: '', type: 'success', id: 0 });
 
         const cart = ref([]);
+        // phone теперь начинается с '+7 '
         const order = ref({
           date: '',
           time: '',
           address: '',
-          phone: '',
+          phone: '+7 ',
           comment: '',
           pickup: false
         });
