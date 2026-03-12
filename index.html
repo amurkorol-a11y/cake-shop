@@ -58,11 +58,47 @@
     <main class="flex-1 overflow-y-auto bg-gray-50">
 
       <!-- Главная -->
-      <div v-if="currentView === 'home'" class="p-4 space-y-3">
-        <p class="text-lg font-bold">🍰 Нежные десерты Bakary 🍰</p>
-        <button @click="currentView = 'catalog'" class="btn-primary">Перейти в каталог</button>
-        <button @click="contactManager" class="btn-secondary">Связаться с менеджером</button>
-      </div>
+<div v-if="currentView === 'home'" class="p-4 space-y-3">
+  <p class="text-lg font-bold text-center">🍰 Нежные десерты Bakary 🍰</p>
+  <p class="text-sm text-gray-600 text-center">
+    Закажите пирожные и зефир с самовывозом или доставкой по Воронежу.
+  </p>
+
+  <button @click="currentView = 'catalog'" class="btn-primary">
+    Перейти в каталог
+  </button>
+
+  <div class="space-y-2">
+    <button
+      type="button"
+      class="btn-secondary"
+      @click="openFlowwow"
+    >
+      Мы на Flowwow
+    </button>
+
+    <button
+      type="button"
+      class="btn-secondary"
+      @click="openVK"
+    >
+      Мы ВКонтакте
+    </button>
+
+    <button
+      type="button"
+      class="btn-secondary"
+      @click="currentView = 'about'"
+    >
+      О нас
+    </button>
+  </div>
+
+  <button @click="contactManager" class="btn-secondary">
+    Связаться с менеджером
+  </button>
+</div>
+
 
       <!-- Каталог -->
       <div v-else-if="currentView === 'catalog'" class="p-4 grid grid-cols-1 gap-4">
