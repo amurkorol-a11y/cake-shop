@@ -58,59 +58,46 @@
     <main class="flex-1 overflow-y-auto bg-gray-50">
 
       <!-- Главная -->
-<div v-if="currentView === 'home'" class="p-4 space-y-3">
-  <!-- О нас -->
-<div v-else-if="currentView === 'about'" class="p-4 space-y-3">
-  <h2 class="text-lg font-bold">О нас</h2>
-  <p class="text-sm text-gray-700">
-    Bakary — небольшая мастерская десертов в Воронеже. Готовим свежие пирожные,
-    зефир и наборы к чаю. Самовывоз с Московского проспекта и доставка по городу.
-  </p>
-  <button @click="currentView = 'home'" class="btn-secondary">
-    ← На главную
-  </button>
-</div>
+      <div v-if="currentView === 'home'" class="p-4 space-y-3">
+        <p class="text-lg font-bold text-center">🍰 Нежные десерты Bakary 🍰</p>
+        <p class="text-sm text-gray-600 text-center">
+          Закажите пирожные и зефир с самовывозом или доставкой по Воронежу.
+        </p>
 
-  <p class="text-lg font-bold text-center">🍰 Нежные десерты Bakary 🍰</p>
-  <p class="text-sm text-gray-600 text-center">
-    Закажите пирожные и зефир с самовывозом или доставкой по Воронежу.
-  </p>
+        <button @click="currentView = 'catalog'" class="btn-primary">
+          Перейти в каталог
+        </button>
 
-  <button @click="currentView = 'catalog'" class="btn-primary">
-    Перейти в каталог
-  </button>
+        <div class="space-y-2">
+          <button type="button" class="btn-secondary" @click="openFlowwow">
+            Мы на Flowwow
+          </button>
 
-  <div class="space-y-2">
-    <button
-      type="button"
-      class="btn-secondary"
-      @click="openFlowwow"
-    >
-      Мы на Flowwow
-    </button>
+          <button type="button" class="btn-secondary" @click="openVK">
+            Мы ВКонтакте
+          </button>
 
-    <button
-      type="button"
-      class="btn-secondary"
-      @click="openVK"
-    >
-      Мы ВКонтакте
-    </button>
+          <button type="button" class="btn-secondary" @click="currentView = 'about'">
+            О нас
+          </button>
+        </div>
 
-    <button
-      type="button"
-      class="btn-secondary"
-      @click="currentView = 'about'"
-    >
-      О нас
-    </button>
-  </div>
+        <button @click="contactManager" class="btn-secondary">
+          Связаться с менеджером
+        </button>
+      </div>
 
-  <button @click="contactManager" class="btn-secondary">
-    Связаться с менеджером
-  </button>
-</div>
-
+      <!-- О нас -->
+      <div v-else-if="currentView === 'about'" class="p-4 space-y-3">
+        <h2 class="text-lg font-bold">О нас</h2>
+        <p class="text-sm text-gray-700">
+          Bakary — небольшая мастерская десертов в Воронеже. Готовим свежие пирожные,
+          зефир и наборы к чаю. Самовывоз с Московского проспекта и доставка по городу.
+        </p>
+        <button @click="currentView = 'home'" class="btn-secondary">
+          ← На главную
+        </button>
+      </div>
 
       <!-- Каталог -->
       <div v-else-if="currentView === 'catalog'" class="p-4 grid grid-cols-1 gap-4">
@@ -130,15 +117,9 @@
             <button @click="addToCart(product)" class="btn-primary text-sm">
               Добавить в корзину
             </button>
-            <a
-  :href="product.flowwowLink"
-  target="_blank"
-  rel="noopener noreferrer"
-  class="btn-flowwow text-sm"
->
-  Купить на Flowwow
-</a>
-
+            <a :href="product.flowwowLink" target="_blank" rel="noopener noreferrer" class="btn-flowwow text-sm">
+              Купить на Flowwow
+            </a>
           </div>
         </div>
       </div>
@@ -323,7 +304,7 @@
   </div>
 
   <script src="./products.js"></script>
-   <script>
+  <script>
     const { createApp, ref, computed } = Vue;
 
     createApp({
@@ -331,8 +312,7 @@
         const tg = window.Telegram?.WebApp;
         const tgUser = tg?.initDataUnsafe?.user || null;
         console.log('TG USER CHECK:', tgUser);
-
-console.log('TG USER:', tgUser);
+        console.log('TG USER:', tgUser);
 
         const currentView = ref('home');
 
@@ -418,7 +398,6 @@ console.log('TG USER:', tgUser);
 
         const isCheckoutValid = computed(() => {
           const digits = (order.value.phone || '').replace(/\D/g, '');
-
           if (digits.length < 10) return false;
           if (!order.value.date || !order.value.time) return false;
           if (!order.value.pickup && !order.value.address) return false;
@@ -432,6 +411,14 @@ console.log('TG USER:', tgUser);
 
         const goHome = () => { currentView.value = 'home'; };
         const goToCart = () => { currentView.value = 'cart'; };
+
+        const openFlowwow = () => {
+          window.open('https://flowwow.com/shop/bakary/', '_blank');
+        };
+
+        const openVK = () => {
+          window.open('https://vk.com/bakary36', '_blank');
+        };
 
         const addToCart = (product) => {
           const existing = cart.value.find(i => i.id === product.id);
@@ -505,14 +492,13 @@ console.log('TG USER:', tgUser);
             finalTotal: finalTotal.value,
             prepaid: Math.floor(finalTotal.value / 2),
             customer: {
-  phone: order.value.phone,
-  comment: order.value.comment,
-  telegramId: tgUser?.id || null,
-  username: tgUser?.username || null,
-  firstName: tgUser?.first_name || null,
-  lastName: tgUser?.last_name || null
-},
-
+              phone: order.value.phone,
+              comment: order.value.comment,
+              telegramId: tgUser?.id || null,
+              username: tgUser?.username || null,
+              firstName: tgUser?.first_name || null,
+              lastName: tgUser?.last_name || null
+            },
             delivery: order.value.pickup
               ? {
                   method: 'pickup',
@@ -580,6 +566,8 @@ console.log('TG USER:', tgUser);
           isCheckoutValid,
           goHome,
           goToCart,
+          openFlowwow,
+          openVK,
           addToCart,
           updateQuantity,
           removeFromCart,
